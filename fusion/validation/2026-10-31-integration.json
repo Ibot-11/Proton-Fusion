@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-31",
+  "language_and_panel_probes": {
+    "language_api": "passed",
+    "panel_cases": [
+      {
+        "disabled": false,
+        "override_redirect": {
+          "Panel": false,
+          "Bar": false,
+          "HUD": true,
+          "Other": true
+        }
+      },
+      {
+        "disabled": true,
+        "override_redirect": {
+          "Panel": true,
+          "Bar": true,
+          "HUD": true,
+          "Other": true
+        }
+      }
+    ]
+  },
+  "frame_regression": {
+    "effect": 0,
+    "requested_bursts": 40,
+    "samples": 80,
+    "size": 580,
+    "resize": true,
+    "minimize": true,
+    "gpu_copies": 0,
+    "cpu_ms": 0,
+    "stress_frames": 0,
+    "module_hashes": {
+      "win32u.so": "4bedb0733a017d38c4455be51dadf93919b40e582ac9ce3fe413bfa9acf50faa",
+      "winex11.so": "1accf1f5c830596072e66621d7cc60cfe82c2e7eaa8eceac34dbcd5f87ea7004"
+    },
+    "damage_disabled": false,
+    "continuous_present": null,
+    "damage_events": 0,
+    "damage_copies": 0,
+    "elapsed_s": 21.219,
+    "stale_30ms": 0,
+    "stale_200ms": 0,
+    "proton_version": "1793301796 experimental-11.0-20261027b-x86_64"
+  },
+  "remaining_launcher_workaround": "window-fix.py: full-size inert X11 dialogs; no reliable Win32 reproducer yet",
+  "runtime_contract": "fusion-runtime.json schema 1; exact payload hashes and build pin",
+  "native_overlay": true,
+  "full_sdk_validated": false
+}

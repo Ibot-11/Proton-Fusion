@@ -2184,6 +2184,9 @@ if __name__ == "__main__":
 
     g_session = Session()
 
+    from fusion.profile import apply as apply_fusion_profile
+    apply_fusion_profile(g_session.env, g_proton.base_dir)
+
     g_session.init_wine()
 
     if g_proton.missing_default_prefix():

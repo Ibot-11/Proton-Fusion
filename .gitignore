@@ -7,3 +7,5 @@
 /vagrant_share/
 /build/
 /fusion/**/__pycache__/
+/.build/
+/.local/

@@ -5,11 +5,18 @@ This fork investigates and fixes stale last-frame rendering of offscreen Win32
 child windows through Wine's X11 driver.
 
 **[Deutsche Untersuchung und Ergebnisse](fusion/docs/UNTERSUCHUNG.de.md)** ·
+[Fusion launcher integration](fusion/docs/INTEGRATION.de.md) ·
 [Build and test](fusion/docs/BUILDING.md) ·
 [Upstream updates](fusion/docs/UPDATING.md) ·
 [Original Proton README](README.upstream.md)
 
 ## Current approach
+
+The runtime also manages Fusion's persistent Qt tool panels directly in Wine,
+implements `bcp47langs.GetUserLanguages`, and owns the Fusion DLL/graphics defaults.
+The Fusion launcher pins a manifest-verified build instead of selecting stock
+Proton or injecting the former Vulkan/panel helpers. Versioned local installation
+and complete SDK packaging share the same runtime manifest contract.
 
 Wine's normal child-surface copy can run before Mesa/Xwayland has updated the
 offscreen source drawable. The Fusion patch subscribes to **XDamage** on actual

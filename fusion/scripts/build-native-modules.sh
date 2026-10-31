@@ -7,7 +7,7 @@ if [[ $# != 1 ]]; then
     exit 2
 fi
 FUSION_BUILD="$(realpath -m -- "$1")"
-if [[ "$FUSION_BUILD" == "$FUSION_SOURCE" || "$FUSION_BUILD" == "$FUSION_SOURCE/"* ]]; then
+if [[ "$FUSION_BUILD" == "$FUSION_SOURCE" || ( "$FUSION_BUILD" == "$FUSION_SOURCE/"* && "$FUSION_BUILD" != "$FUSION_SOURCE/.build/"* ) ]]; then
     echo 'Use a separate build directory outside the source checkout.' >&2
     exit 2
 fi

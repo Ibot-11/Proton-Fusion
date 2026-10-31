@@ -1,0 +1,72 @@
+diff --git a/dlls/winex11.drv/window.c b/dlls/winex11.drv/window.c
+index cc3b618..2b66277 100644
+--- a/dlls/winex11.drv/window.c
++++ b/dlls/winex11.drv/window.c
+@@ -462,6 +462,59 @@ static BOOL thickframe_managed( DWORD style )
+  *
+  * Check if a given window should be managed
+  */
++static BOOL fusion_qt_tool( HWND hwnd )
++{
++    static const WCHAR suffix[] = u"QWindowToolSaveBits";
++    WCHAR class_name[128];
++    UNICODE_STRING name = { .Buffer = class_name, .MaximumLength = sizeof(class_name) };
++    int length;
++
++    length = NtUserGetClassName( hwnd, FALSE, &name );
++    return length >= ARRAY_SIZE(suffix) - 1 && class_name[0] == 'Q' && class_name[1] == 't' &&
++           !wcscmp( class_name + length - (ARRAY_SIZE(suffix) - 1), suffix );
++}
++
++static BOOL fusion_vertical_panel( HWND hwnd, HWND owner, const RECT *rect, UINT dpi )
++{
++    RECT parent;
++    int width = rect->right - rect->left, height = rect->bottom - rect->top;
++
++    if (!fusion_qt_tool( hwnd ) || !NtUserGetWindowRect( owner, &parent, dpi )) return FALSE;
++    return width >= (180 * dpi + 48) / 96 && height >= (200 * dpi + 48) / 96 &&
++           height > width && width < (parent.right - parent.left) / 2;
++}
++
++/* Fusion's persistent Qt panels are owned tool popups. Manage them directly
++ * rather than changing their WS_EX_APPWINDOW style from a polling helper.
++ * Keep small cursor previews and dimension HUDs on the normal popup path. */
++static BOOL fusion_persistent_panel( HWND hwnd, DWORD style, DWORD ex_style )
++{
++    const char *setting = getenv( "WINE_FUSION_MANAGED_PANELS" );
++    HWND owner, other;
++    RECT rect, candidate;
++    DWORD pid;
++    UINT dpi;
++
++    if (!setting || !strcmp( setting, "0" ) || !(style & WS_POPUP) || !(ex_style & WS_EX_TOOLWINDOW)) return FALSE;
++    if (!(owner = NtUserGetWindowRelative( hwnd, GW_OWNER )) || !fusion_qt_tool( hwnd )) return FALSE;
++    dpi = NtUserGetDpiForWindow( owner );
++    if (!dpi) dpi = 96;
++    if (!NtUserGetWindowRect( hwnd, &rect, dpi )) return FALSE;
++    if (fusion_vertical_panel( hwnd, owner, &rect, dpi )) return TRUE;
++    if (rect.bottom - rect.top <= 1 || rect.bottom - rect.top > (40 * dpi + 48) / 96) return FALSE;
++    for (other = NtUserGetWindowRelative( NtUserGetDesktopWindow(), GW_CHILD ); other;
++         other = NtUserGetWindowRelative( other, GW_HWNDNEXT ))
++    {
++        NtUserGetWindowThread( other, &pid );
++        if (pid != GetCurrentProcessId() || NtUserGetWindowRelative( other, GW_OWNER ) != owner ||
++            !(NtUserGetWindowLongW( other, GWL_STYLE ) & WS_VISIBLE) ||
++            !NtUserGetWindowRect( other, &candidate, dpi )) continue;
++        if (fusion_vertical_panel( other, owner, &candidate, dpi ) &&
++            abs( candidate.left - rect.left ) <= 2 && abs( candidate.right - rect.right ) <= 2) return TRUE;
++    }
++    return FALSE;
++}
++
+ static BOOL is_window_managed( HWND hwnd, UINT swp_flags, BOOL fullscreen )
+ {
+     DWORD style, ex_style;
+@@ -488,6 +541,7 @@ static BOOL is_window_managed( HWND hwnd, UINT swp_flags, BOOL fullscreen )
+     /* application windows are managed */
+     ex_style = NtUserGetWindowLongW( hwnd, GWL_EXSTYLE );
+     if (ex_style & WS_EX_APPWINDOW) return TRUE;
++    if (fusion_persistent_panel( hwnd, style, ex_style )) return TRUE;
+     /* windows that own popups are managed */
+     if (has_owned_popups( hwnd )) return TRUE;
+     /* default: not managed */

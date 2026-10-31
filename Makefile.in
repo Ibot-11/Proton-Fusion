@@ -1491,8 +1491,15 @@ $(DIST_COPY_TARGETS): | $(DST_DIR)
 
 all-dist: $(DIST_COPY_TARGETS)
 
+FUSION_PROFILE_TARGETS := $(addprefix $(DST_BASE)/fusion/,__init__.py profile.py dxvk.conf)
+$(FUSION_PROFILE_TARGETS): $(DST_BASE)/fusion/%: $(SRCDIR)/fusion/%
+	mkdir -p $(dir $@)
+	cp -a $< $@
+all-dist: $(FUSION_PROFILE_TARGETS)
+
 all-dist:
 	echo `date '+%s'` `GIT_DIR=$(abspath $(SRCDIR)/.git) git describe --tags` > $(DIST_VERSION)
+	python3 $(SRCDIR)/fusion/scripts/write-manifest.py $(DST_BASE) --kind sdk
 
 
 ##

@@ -1,0 +1,77 @@
+diff --git a/dlls/bcp47langs/Makefile.in b/dlls/bcp47langs/Makefile.in
+index ee01342..dfe1091 100644
+--- a/dlls/bcp47langs/Makefile.in
++++ b/dlls/bcp47langs/Makefile.in
+@@ -1,5 +1,6 @@
+ MODULE    = bcp47langs.dll
+ IMPORTLIB = bcp47langs
++IMPORTS   = combase
+ 
+ SOURCES = \
+ 	main.c
+diff --git a/dlls/bcp47langs/main.c b/dlls/bcp47langs/main.c
+index ab0a0b5..344597c 100644
+--- a/dlls/bcp47langs/main.c
++++ b/dlls/bcp47langs/main.c
+@@ -59,6 +59,30 @@ HRESULT WINAPI GetFontFallbackLanguageList(const WCHAR *lang, size_t buffer_leng
+ 
+ HRESULT WINAPI GetUserLanguages(WCHAR delim, HSTRING *langs)
+ {
+-    FIXME("%lc, %p\n", delim, langs);
+-    return S_OK;
++    ULONG count, size = 0;
++    WCHAR *buffer, *src, *dst;
++    HRESULT hr;
++
++    TRACE("%lc, %p\n", delim, langs);
++    if (!langs) return E_INVALIDARG;
++    *langs = NULL;
++    if (!GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &count, NULL, &size))
++        return HRESULT_FROM_WIN32(GetLastError());
++    if (!(buffer = HeapAlloc(GetProcessHeap(), 0, size * sizeof(*buffer)))) return E_OUTOFMEMORY;
++    if (!GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &count, buffer, &size))
++    {
++        hr = HRESULT_FROM_WIN32(GetLastError());
++        HeapFree(GetProcessHeap(), 0, buffer);
++        return hr;
++    }
++
++    /* Convert the ordered MULTI_SZ into the caller's delimited HSTRING. */
++    for (src = dst = buffer; *src;)
++    {
++        while (*src) *dst++ = *src++;
++        if (*++src) *dst++ = delim;
++    }
++    hr = WindowsCreateString(buffer, dst - buffer, langs);
++    HeapFree(GetProcessHeap(), 0, buffer);
++    return hr;
+ }
+diff --git a/dlls/bcp47langs/tests/bcp47langs.c b/dlls/bcp47langs/tests/bcp47langs.c
+index ad8c525..5fc0235 100644
+--- a/dlls/bcp47langs/tests/bcp47langs.c
++++ b/dlls/bcp47langs/tests/bcp47langs.c
+@@ -24,7 +24,7 @@
+ #include "wine/test.h"
+ 
+ HRESULT WINAPI GetFontFallbackLanguageList(const WCHAR *, size_t, WCHAR *, size_t *);
+-DWORD WINAPI GetUserLanguages(WCHAR, HSTRING *);
++HRESULT WINAPI GetUserLanguages(WCHAR, HSTRING *);
+ 
+ static void test_GetFontFallbackLanguageList(void)
+ {
+@@ -76,14 +76,13 @@ static void test_GetUserLanguages(void)
+ 
+     hr = GetUserLanguages(';', &usrlangs);
+     ok(hr == S_OK, "Got unexpected hr %#lx.\n", hr);
+-    todo_wine
+     ok(!!usrlangs, "Unexpected pointer.\n");
+     if (!usrlangs) return;
+ 
+     langs = WindowsGetStringRawBuffer(usrlangs, NULL);
+ 
+     for (WCHAR *p = wcstok(wcsdup(langs), L";"); p; p = wcstok(NULL, L";")) count++;
+-    todo_wine ok(count > 0, "Got count=%d.\n", count);
++    ok(count > 0, "Got count=%d.\n", count);
+     WindowsDeleteString(usrlangs);
+ }
+ 

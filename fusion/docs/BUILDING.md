@@ -40,7 +40,8 @@ SDK redistributable.
 
 ## Native module experiment
 
-This builds only `win32u.so` and `winex11.so` for the local x86_64 host. It requires
+The native step builds `win32u.so` and `winex11.so` for the local x86_64 host. A
+second Clang PE step builds the patched `bcp47langs.dll`. These steps require
 GCC, Make, Autoconf/Autoheader, Bison, Flex, Perl, Python, X11/XComposite/XDamage
 development files, and the optional development libraries detected by Wine.
 It is useful for investigating the exact installed Proton source version;
@@ -48,12 +49,13 @@ it is not a portable or 32-bit release build.
 
 ```bash
 bash fusion/scripts/build-native-modules.sh /absolute/path/to/fusion-native
+bash fusion/scripts/build-pe-modules.sh /absolute/path/to/fusion-pe
 ```
 
-To experiment with these modules, make a separate writable copy of the exact
-reference runtime and replace its
-`files/lib/wine/x86_64-unix/{win32u.so,winex11.so}`. Do not combine these modules
-with a different Wine source revision. Keep the Steam-managed runtime intact.
+Use `fusion/scripts/install-local.py` to assemble a versioned runtime from the
+matching official base, both module builds and the Fusion profile. See
+`INTEGRATION.de.md`. It leaves Steam's managed runtime intact and verifies the
+base version before creating `fusion-runtime.json`.
 
 ## Test program
 
@@ -88,12 +90,10 @@ required by the patched runtime.
 * `WINE_FUSION_CHILD_DAMAGE=0` restores the original presentation behavior.
 * XDamage is enabled by default for actual offscreen Vulkan client surfaces.
   Surface dimensions and present mode are not used to select them.
-* The existing Fusion launcher still injects its Vulkan sync layer. For a clean
-  end-to-end comparison, the launcher must skip that layer for this runtime.
-  Integration into the existing launcher has not been enabled automatically.
-  For an initial comparison after selecting the separate custom runtime in the
-  Fusion Manager, `FUSION_SYNC_DISABLE=1 autodesk-fusion` makes the existing layer
-  passive without editing the installed launcher.
+* The updated Fusion launcher pins the verified runtime, removes the legacy
+  Fusion Vulkan layer, and no longer runs `panel-fix.exe`. It retains browser,
+  SpaceMouse and the separately identified phantom-dialog integration.
+* `WINE_FUSION_MANAGED_PANELS=0` disables the additional Qt-panel policy.
 
 The patch initially retains Wine's original immediate copy and adds a corrective
 copy after source damage. This preserves exposure/geometry behavior. Coalescing

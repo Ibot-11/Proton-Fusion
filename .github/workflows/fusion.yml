@@ -24,16 +24,19 @@ jobs:
       - name: Install native build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential autoconf bison flex libx11-dev libxext-dev libxcomposite-dev libxdamage-dev libxrender-dev libxrandr-dev libxfixes-dev libfreetype-dev libfontconfig-dev libgnutls28-dev libvulkan-dev
+          sudo apt-get install -y build-essential clang lld autoconf bison flex libx11-dev libxext-dev libxcomposite-dev libxdamage-dev libxrender-dev libxrandr-dev libxfixes-dev libfreetype-dev libfontconfig-dev libgnutls28-dev libvulkan-dev
       - name: Initialize the pinned code and check patch applicability
         run: |
           git submodule update --init --depth=1 wine dxvk
           python3 fusion/scripts/prepare.py --check
           python3 -m py_compile fusion/scripts/*.py fusion/tests/*.py
+          python3 fusion/tests/test_profile.py
           for script in fusion/scripts/*.sh fusion/tests/*.sh; do bash -n "$script"; done
           git diff --check
       - name: Compile the affected Unix modules
         run: bash fusion/scripts/build-native-modules.sh "$RUNNER_TEMP/fusion-native" 2>&1 | tee "$RUNNER_TEMP/fusion-native-build.log"
+      - name: Compile the patched Windows language DLL
+        run: bash fusion/scripts/build-pe-modules.sh "$RUNNER_TEMP/fusion-pe" 2>&1 | tee "$RUNNER_TEMP/fusion-pe-build.log"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -42,6 +45,8 @@ jobs:
             ${{ runner.temp }}/fusion-native-build.log
             ${{ runner.temp }}/fusion-native/dlls/win32u/win32u.so
             ${{ runner.temp }}/fusion-native/dlls/winex11.drv/winex11.so
+            ${{ runner.temp }}/fusion-pe-build.log
+            ${{ runner.temp }}/fusion-pe/dlls/bcp47langs/x86_64-windows/bcp47langs.dll
           retention-days: 14
 
   sdk-redistributable:

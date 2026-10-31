@@ -34,7 +34,6 @@ results = []
 for name, patched, extra, overrides in cases:
     env = os.environ.copy()
     env.pop("WINE_FUSION_CHILD_DAMAGE", None)
-    env.pop("FUSION_SYNC_DISABLE", None)
     env["WINEDEBUG"] = "+fusion" if patched else "-all"
     env.update(overrides)
     cmd = [sys.executable, str(tests / "run-child-present.py"),

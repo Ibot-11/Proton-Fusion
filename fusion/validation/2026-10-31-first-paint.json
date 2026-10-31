@@ -6,7 +6,6 @@
     "source": "X11 event and pixel recording in actual Fusion on KWin/Xwayland"
   },
   "first_paint": {
-    "runtime": "/home/tobias/Projekte/Proton-Fusion/.local/first-paint-candidate/versions/fusion-6e072bcd655dc010",
     "dpi": 144,
     "unaware": true,
     "cases": [
@@ -42,7 +41,8 @@
         "prematurely_visible": 0,
         "painted_samples": 109
       }
-    ]
+    ],
+    "runtime_build_id": "fusion-6e072bcd655dc010"
   },
   "frame_regression": {
     "effect": 0,
@@ -65,8 +65,8 @@
     "elapsed_s": 19.929,
     "stale_30ms": 0,
     "stale_200ms": 0,
-    "proton": "/home/tobias/Projekte/Proton-Fusion/.local/first-paint-candidate/versions/fusion-6e072bcd655dc010",
-    "proton_version": "1793301796 experimental-11.0-20261027b-x86_64"
+    "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+    "runtime_build_id": "fusion-6e072bcd655dc010"
   },
   "runtime_probes": {
     "language_api": "passed",
@@ -90,8 +90,15 @@
         }
       }
     ],
-    "runtime": "/home/tobias/Projekte/Proton-Fusion/.local/first-paint-candidate/versions/fusion-6e072bcd655dc010"
+    "runtime_build_id": "fusion-6e072bcd655dc010"
   },
   "patch_sha256": "89f803c9fe74e3fd5cb857ddd272698d944f7c872add6ac7e8215d3c5414f916",
-  "scope": "Local x86_64 native overlay; automated runtime probes passed. Actual Fusion acceptance is recorded separately after deployment."
+  "scope": "Local x86_64 native overlay on AMD/Mesa with KWin/Xwayland; automated regression probes and actual Fusion Extrusion test passed. Other GPUs and portable SDK/32-bit builds remain unverified.",
+  "manual_acceptance": {
+    "status": "passed",
+    "confirmed_at": "2026-10-31T18:52:00.248252+00:00",
+    "scenario": "Open and cancel Extrusion in actual Fusion after deployment",
+    "user_result": "Kein schwarzer Blitz, Panel normal rechts"
+  },
+  "deployed_build_id": "fusion-d9e5d9e69d1f12fa"
 }

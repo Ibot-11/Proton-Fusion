@@ -14,7 +14,7 @@ This reports a newer upstream commit without changing source, prefixes, or
 installed runtimes. Updates are reviewed explicitly:
 
 1. Keep the current working build and results. Create a fresh Git worktree and an
-   `update/...` branch from `fusion`; use clean submodules in that worktree.
+   `update/...` branch from `main`; use clean submodules in that worktree.
 2. Fetch and merge the selected upstream commit. Preserve the absolute official
    Wine submodule URL and the fork's `--with-xdamage` configure requirement.
 3. Update `fusion/upstream.json`: Proton commit, selected date, Wine and DXVK

@@ -7,7 +7,7 @@ Upstream's original documentation is in `README.upstream.md`.
 ## Source preparation
 
 ```bash
-git clone --branch fusion https://github.com/Ibot-11/Proton-Fusion.git
+git clone --branch main https://github.com/Ibot-11/Proton-Fusion.git
 cd Proton-Fusion
 git submodule update --init --depth=1 wine dxvk
 python3 fusion/scripts/prepare.py --check

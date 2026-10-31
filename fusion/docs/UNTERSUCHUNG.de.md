@@ -1,9 +1,14 @@
 # Untersuchung des Frame-Handlings in Fusion unter Linux
 
-Stand: 31. Oktober 2026. Ergebnis: Ein ereignisgesteuerter Wine-X11-Patch ist auf
+Historischer Untersuchungsbericht vom 31. Oktober 2026. Der aktuelle Stand mit
+bestätigtem Fusion-Praxistest steht in [Integration](INTEGRATION.de.md) und
+[Validierung](../validation/2026-10-31-first-paint.json). Der hier untersuchte
+externe Vulkan-Layer wurde inzwischen aus dem Launcher entfernt.
+
+Ergebnis der ursprünglichen Untersuchung: Ein ereignisgesteuerter Wine-X11-Patch ist auf
 dem getesteten System die bisher überzeugendste Lösung. Der eigene Proton-Fork
 ist die Build- und Auslieferungsbasis; die eigentliche Korrektur liegt im
-Wine-Treiber. Die Freigabe für den Fusion-Alltag steht noch aus.
+Wine-Treiber.
 
 ## Ausgangslage und nachgewiesener Ablauf
 
@@ -138,8 +143,8 @@ ist damit nicht nachgewiesen.
 
 ## Offene Punkte vor einer stabilen Freigabe
 
-* Fusion selbst mit ausgeschalteter Synchronisation des alten Layers prüfen:
-  Snapping, Skizzenvorschau, Dimensionen, kleine HUDs und mehrere Dokumente.
+* Die bestätigten Fusion-Tests auf weitere CAD-Abläufe ausweiten:
+  Skizzenvorschau, Dimensionen, kleine HUDs und mehrere Dokumente.
 * Threads, die keine normale Nachrichtenschleife verarbeiten, und
   prozessübergreifende Child-Surfaces separat untersuchen. Die initiale
   Subscription benötigt lokale Fensterdaten des Besitzers.
@@ -152,11 +157,10 @@ ist damit nicht nachgewiesen.
   Lokal sind Docker und Podman derzeit nicht eingerichtet; der native
   Modul-Build wurde erfolgreich durchgeführt.
 
-Der nächste technische Schritt ist der Fusion-End-to-End-Test des vorhandenen
-lokalen Testbuilds. Erst danach sollte der bisherige Vulkan-Layer für diese
-Runtime im Launcher dauerhaft entfallen. Für einen ersten kontrollierten
-Vergleich kann `FUSION_SYNC_DISABLE=1` den bisherigen Layer passiv schalten,
-nachdem im Manager die separate Proton-Fusion-Runtime ausgewählt wurde.
+Die ersten Fusion-Praxistests sind inzwischen bestätigt. Der Launcher bindet
+den geprüften Proton-Fusion-Build fest und entfernt den bisherigen Vulkan-Layer
+sowie den Panel-Daemon bei der Migration. Die ursprünglichen Workarounds bleiben
+in der Git-Historie nachvollziehbar.
 
 Der Fork hält die Änderungen als kleine Wine-Patchserie. Der langfristig
 wartungsärmste Weg ist eine upstream geeignete Fassung und die spätere Entfernung

@@ -117,8 +117,6 @@ def run(args):
                WINEDEBUG=env.get("WINEDEBUG", "-all"),
                DXVK_CONFIG_FILE=str(args.config.resolve()),
                DXVK_LOG_PATH=str(out), DXVK_LOG_LEVEL="info")
-    if args.layer:
-        env.update(VK_LAYER_PATH=str(args.layer.resolve()), VK_INSTANCE_LAYERS="VK_LAYER_FUSION_present_sync")
     x = X11()
     top = source = gc = damage = damage_lib = None
     damage_base = C.c_int()
@@ -242,7 +240,6 @@ if __name__ == "__main__":
     parser.add_argument("--effect", type=int, choices=(0, 1), default=0)
     parser.add_argument("--bursts", type=int, default=30)
     parser.add_argument("--timeout", type=float, default=120)
-    parser.add_argument("--layer", type=Path)
     parser.add_argument("--damage-observe", action="store_true")
     parser.add_argument("--damage-copy", action="store_true")
     parser.add_argument("--size", type=int, choices=(320, 384, 580), default=580)

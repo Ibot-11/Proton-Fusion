@@ -1,8 +1,8 @@
 # Proton-Fusion
 
-Experimental Autodesk Fusion runtime based on **official Proton Experimental**.
-This fork investigates and fixes stale last-frame rendering of offscreen Win32
-child windows through Wine's X11 driver.
+Autodesk Fusion runtime based on **official Proton Experimental**. The maintained
+branch is `main`. The fork fixes stale last-frame rendering of offscreen Win32
+child windows, Qt panel handling and preferred UI language support through Wine.
 
 **[Deutsche Untersuchung und Ergebnisse](fusion/docs/UNTERSUCHUNG.de.md)** ·
 [Fusion launcher integration](fusion/docs/INTEGRATION.de.md) ·
@@ -43,11 +43,14 @@ Cases include discard and flip swapchains, a 384x384 viewport, resize/minimize,
 GPU load, and FIFO. Stock controls reproduced the bug; disabling the patch
 restored it. Results are recorded in `fusion/validation/2026-10-31.json`.
 
-This is an investigation build, not a stable release. The first local runtime
+The local runtime
 uses host-built x86_64 Unix modules on the matching official runtime. Native
 module CI and a manual complete SDK build workflow are included. Real Fusion
-interaction, other GPU vendors, cross-process surfaces, and 32-bit support
-require further validation. See the investigation for the retained immediate
+interaction has been checked on the local AMD/Mesa setup, including the corrected
+Extrusion panel opening. The panel, language and 40-series resize/minimize
+regressions passed. Results are in `fusion/validation/2026-10-31-first-paint.json`.
+Other GPU vendors, cross-process surfaces, and a complete portable/32-bit build
+still require validation. See the investigation for the retained immediate
 copy, event-loop dependency, and alternatives.
 
 ## Pinned upstream

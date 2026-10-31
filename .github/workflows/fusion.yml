@@ -2,9 +2,9 @@ name: Fusion build validation
 
 on:
   push:
-    branches: [fusion]
+    branches: [main]
   pull_request:
-    branches: [fusion]
+    branches: [main]
   workflow_dispatch:
     inputs:
       build_sdk:

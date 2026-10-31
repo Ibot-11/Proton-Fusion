@@ -611,6 +611,7 @@ WINE_SOURCE_ARGS = \
   --exclude server/request_trace.h \
 
 WINE_AUTOCONF_ARGS = \
+  --with-xdamage \
   --enable-werror \
   --with-mingw=$(MINGW_TYPE) \
   --disable-tests

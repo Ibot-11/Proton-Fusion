@@ -1,0 +1,368 @@
+{
+  "date": "2026-10-31",
+  "hardware": {
+    "gpu": "AMD Radeon RX 7900 XTX",
+    "driver": "Mesa RADV 26.2.5",
+    "display": "Xwayland",
+    "os": "CachyOS x86_64"
+  },
+  "upstream": {
+    "schema": 1,
+    "selected_at": "2026-10-31",
+    "proton": {
+      "repository": "https://github.com/ValveSoftware/Proton.git",
+      "branch": "experimental_11.0",
+      "commit": "871b0bf1402dd9632a16495a2def7036161e771c"
+    },
+    "wine": {
+      "repository": "https://github.com/ValveSoftware/wine.git",
+      "commit": "7b3ceaf8644bb5d57140903e12897efac69be16a"
+    },
+    "dxvk": {
+      "repository": "https://github.com/doitsujin/dxvk.git",
+      "commit": "a78a467cadb22bee928904290cf8e7921b121851"
+    },
+    "reference_runtime": "experimental-11.0-20261027b-x86_64",
+    "stable_release_at_selection": "proton-11.0-2"
+  },
+  "patch_sha256": "12b1694daca00d3183cb2f66ec8ef78315d24caa295fe208115db6cf3a313ee0",
+  "regular_patched_bursts": 370,
+  "regular_patched_pixel_samples": 740,
+  "suite": [
+    {
+      "effect": 0,
+      "requested_bursts": 30,
+      "samples": 60,
+      "size": 580,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 0,
+      "module_hashes": {
+        "win32u.so": "be51c7f7d30616338f8e8bbce958ac9ea56c953448157a9218ca388d54e49739",
+        "winex11.so": "611ba16943065e19c84e0349e837770cd495b7c827ad5d33fde393480ed06de3"
+      },
+      "damage_disabled": false,
+      "continuous_present": null,
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 14.418,
+      "stale_30ms": 30,
+      "stale_200ms": 30,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "stock-discard",
+      "native_damage_repaints": 0
+    },
+    {
+      "effect": 1,
+      "requested_bursts": 30,
+      "samples": 60,
+      "size": 580,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 0,
+      "module_hashes": {
+        "win32u.so": "be51c7f7d30616338f8e8bbce958ac9ea56c953448157a9218ca388d54e49739",
+        "winex11.so": "611ba16943065e19c84e0349e837770cd495b7c827ad5d33fde393480ed06de3"
+      },
+      "damage_disabled": false,
+      "continuous_present": null,
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 14.215,
+      "stale_30ms": 25,
+      "stale_200ms": 25,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "stock-flip",
+      "native_damage_repaints": 0
+    },
+    {
+      "effect": 0,
+      "requested_bursts": 100,
+      "samples": 200,
+      "size": 580,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 0,
+      "module_hashes": {
+        "win32u.so": "89f7ab8d243400b602a43dab13beb2fc4172f7341913df895ab6a49e84fc8740",
+        "winex11.so": "0c33c4f2358393e55a3048b85ce1eb25c5801a8848738d8526d10d0b75c3fa5c"
+      },
+      "damage_disabled": false,
+      "continuous_present": null,
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 42.778,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "patched-discard",
+      "native_damage_repaints": 248
+    },
+    {
+      "effect": 1,
+      "requested_bursts": 100,
+      "samples": 200,
+      "size": 580,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 0,
+      "module_hashes": {
+        "win32u.so": "89f7ab8d243400b602a43dab13beb2fc4172f7341913df895ab6a49e84fc8740",
+        "winex11.so": "0c33c4f2358393e55a3048b85ce1eb25c5801a8848738d8526d10d0b75c3fa5c"
+      },
+      "damage_disabled": false,
+      "continuous_present": null,
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 42.416,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "patched-flip",
+      "native_damage_repaints": 248
+    },
+    {
+      "effect": 0,
+      "requested_bursts": 40,
+      "samples": 80,
+      "size": 384,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 0,
+      "module_hashes": {
+        "win32u.so": "89f7ab8d243400b602a43dab13beb2fc4172f7341913df895ab6a49e84fc8740",
+        "winex11.so": "0c33c4f2358393e55a3048b85ce1eb25c5801a8848738d8526d10d0b75c3fa5c"
+      },
+      "damage_disabled": false,
+      "continuous_present": null,
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 18.149,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "patched-small",
+      "native_damage_repaints": 96
+    },
+    {
+      "effect": 0,
+      "requested_bursts": 60,
+      "samples": 120,
+      "size": 580,
+      "resize": true,
+      "minimize": true,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 0,
+      "module_hashes": {
+        "win32u.so": "89f7ab8d243400b602a43dab13beb2fc4172f7341913df895ab6a49e84fc8740",
+        "winex11.so": "0c33c4f2358393e55a3048b85ce1eb25c5801a8848738d8526d10d0b75c3fa5c"
+      },
+      "damage_disabled": false,
+      "continuous_present": null,
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 27.717,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "patched-resize-minimize",
+      "native_damage_repaints": 154
+    },
+    {
+      "effect": 0,
+      "requested_bursts": 40,
+      "samples": 80,
+      "size": 580,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 2,
+      "cpu_ms": 2,
+      "stress_frames": 0,
+      "module_hashes": {
+        "win32u.so": "89f7ab8d243400b602a43dab13beb2fc4172f7341913df895ab6a49e84fc8740",
+        "winex11.so": "0c33c4f2358393e55a3048b85ce1eb25c5801a8848738d8526d10d0b75c3fa5c"
+      },
+      "damage_disabled": false,
+      "continuous_present": null,
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 18.711,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "patched-gpu-load",
+      "native_damage_repaints": 95
+    },
+    {
+      "effect": 0,
+      "requested_bursts": 30,
+      "samples": 60,
+      "size": 580,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 0,
+      "module_hashes": {
+        "win32u.so": "89f7ab8d243400b602a43dab13beb2fc4172f7341913df895ab6a49e84fc8740",
+        "winex11.so": "0c33c4f2358393e55a3048b85ce1eb25c5801a8848738d8526d10d0b75c3fa5c"
+      },
+      "damage_disabled": false,
+      "continuous_present": null,
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 14.83,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "patched-fifo",
+      "native_damage_repaints": 75
+    },
+    {
+      "effect": 0,
+      "requested_bursts": 20,
+      "samples": 40,
+      "size": 580,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 0,
+      "module_hashes": {
+        "win32u.so": "89f7ab8d243400b602a43dab13beb2fc4172f7341913df895ab6a49e84fc8740",
+        "winex11.so": "0c33c4f2358393e55a3048b85ce1eb25c5801a8848738d8526d10d0b75c3fa5c"
+      },
+      "damage_disabled": true,
+      "continuous_present": null,
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 10.434,
+      "stale_30ms": 16,
+      "stale_200ms": 16,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "patched-disabled",
+      "native_damage_repaints": 0
+    },
+    {
+      "effect": 0,
+      "requested_bursts": 1,
+      "samples": 2,
+      "size": 580,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 1000,
+      "module_hashes": {
+        "win32u.so": "be51c7f7d30616338f8e8bbce958ac9ea56c953448157a9218ca388d54e49739",
+        "winex11.so": "611ba16943065e19c84e0349e837770cd495b7c827ad5d33fde393480ed06de3"
+      },
+      "damage_disabled": false,
+      "continuous_present": {
+        "frames": 1000,
+        "mean_present_us": 351
+      },
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 3.647,
+      "stale_30ms": 1,
+      "stale_200ms": 1,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "stock-throughput",
+      "native_damage_repaints": 0
+    },
+    {
+      "effect": 0,
+      "requested_bursts": 1,
+      "samples": 2,
+      "size": 580,
+      "resize": false,
+      "minimize": false,
+      "gpu_copies": 0,
+      "cpu_ms": 0,
+      "stress_frames": 1000,
+      "module_hashes": {
+        "win32u.so": "89f7ab8d243400b602a43dab13beb2fc4172f7341913df895ab6a49e84fc8740",
+        "winex11.so": "0c33c4f2358393e55a3048b85ce1eb25c5801a8848738d8526d10d0b75c3fa5c"
+      },
+      "damage_disabled": false,
+      "continuous_present": {
+        "frames": 1000,
+        "mean_present_us": 361
+      },
+      "damage_events": 0,
+      "damage_copies": 0,
+      "elapsed_s": 3.626,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+      "case": "patched-throughput",
+      "native_damage_repaints": 2
+    }
+  ],
+  "final_native_artifact_smoke": {
+    "effect": 0,
+    "requested_bursts": 20,
+    "samples": 40,
+    "size": 580,
+    "resize": true,
+    "minimize": true,
+    "gpu_copies": 0,
+    "cpu_ms": 0,
+    "stress_frames": 0,
+    "module_hashes": {
+      "win32u.so": "f6ea73f432f7144b4fd9f5d6ef86278c761322a653f97c22a597211a6c02f659",
+      "winex11.so": "53e523b2e56c6b0d7c526d7f4a281d1b608add6fbdc8b30d488132a6d250f75a"
+    },
+    "damage_disabled": false,
+    "continuous_present": null,
+    "damage_events": 0,
+    "damage_copies": 0,
+    "elapsed_s": 10.735,
+    "stale_30ms": 0,
+    "stale_200ms": 0,
+    "proton_version": "1793301796 experimental-11.0-20261027b-x86_64"
+  },
+  "existing_vulkan_layer_reference": {
+    "effect": 0,
+    "requested_bursts": 30,
+    "samples": 60,
+    "size": 580,
+    "resize": false,
+    "minimize": false,
+    "gpu_copies": 0,
+    "cpu_ms": 0,
+    "stress_frames": 0,
+    "module_hashes": {
+      "win32u.so": "be51c7f7d30616338f8e8bbce958ac9ea56c953448157a9218ca388d54e49739",
+      "winex11.so": "611ba16943065e19c84e0349e837770cd495b7c827ad5d33fde393480ed06de3"
+    },
+    "damage_disabled": false,
+    "continuous_present": null,
+    "damage_events": 0,
+    "damage_copies": 0,
+    "elapsed_s": 14.422,
+    "stale_30ms": 0,
+    "stale_200ms": 0,
+    "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+    "layer_sha256": "45cf3d3a345c53e8caba8f85daeaf0483165ad159d9a13f53d3302fd7c976e92"
+  },
+  "limitations": [
+    "No real Fusion end-to-end test yet",
+    "No complete Proton SDK or 32-bit build yet",
+    "Only this AMD/Mesa/Xwayland system validated",
+    "Final artifact rebuilt after configure dependency enforcement and callback-thread documentation changes; final smoke rerun with resize/minimize",
+    "Throughput is one 1000-frame mean with no GUI message pumping; not visible FPS or Fusion performance"
+  ]
+}

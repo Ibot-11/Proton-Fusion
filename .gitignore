@@ -6,3 +6,4 @@
 /.vagrant/
 /vagrant_share/
 /build/
+/fusion/**/__pycache__/

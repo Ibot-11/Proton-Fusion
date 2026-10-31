@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "selected_at": "2026-10-31",
+  "proton": {
+    "repository": "https://github.com/ValveSoftware/Proton.git",
+    "branch": "experimental_11.0",
+    "commit": "871b0bf1402dd9632a16495a2def7036161e771c"
+  },
+  "wine": {
+    "repository": "https://github.com/ValveSoftware/wine.git",
+    "commit": "7b3ceaf8644bb5d57140903e12897efac69be16a"
+  },
+  "dxvk": {
+    "repository": "https://github.com/doitsujin/dxvk.git",
+    "commit": "a78a467cadb22bee928904290cf8e7921b121851"
+  },
+  "reference_runtime": "experimental-11.0-20261027b-x86_64",
+  "stable_release_at_selection": "proton-11.0-2"
+}

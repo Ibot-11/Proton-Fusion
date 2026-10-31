@@ -14,16 +14,19 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(env['DXVK_CONFIG_FILE'], '/user/config')
         self.assertEqual(env['PROTON_USE_WINED3D'], '0')
         self.assertEqual(env['WINE_FUSION_MANAGED_PANELS'], '1')
+        self.assertEqual(env['WINE_FUSION_PANEL_FIRST_PAINT'], '1')
         self.assertIn('siappdll=n,b', env['WINEDLLOVERRIDES'])
         self.assertIn('icuuc=b', env['WINEDLLOVERRIDES'])
         self.assertNotIn('bcp47langs=', env['WINEDLLOVERRIDES'])
         self.assertNotIn('icuuc,', env['WINEDLLOVERRIDES'])
 
     def test_diagnostic_opt_out_is_preserved(self):
-        env = {'WINE_FUSION_CHILD_DAMAGE': '0', 'WINE_FUSION_MANAGED_PANELS': '0'}
+        env = {'WINE_FUSION_CHILD_DAMAGE': '0', 'WINE_FUSION_MANAGED_PANELS': '0',
+               'WINE_FUSION_PANEL_FIRST_PAINT': '0'}
         profile.apply(env, '/runtime')
         self.assertEqual(env['WINE_FUSION_CHILD_DAMAGE'], '0')
         self.assertEqual(env['WINE_FUSION_MANAGED_PANELS'], '0')
+        self.assertEqual(env['WINE_FUSION_PANEL_FIRST_PAINT'], '0')
 
 
 if __name__ == '__main__': unittest.main()

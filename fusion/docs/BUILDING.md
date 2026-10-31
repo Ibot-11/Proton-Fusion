@@ -94,6 +94,25 @@ required by the patched runtime.
   Fusion Vulkan layer, and no longer runs `panel-fix.exe`. It retains browser,
   SpaceMouse and the separately identified phantom-dialog integration.
 * `WINE_FUSION_MANAGED_PANELS=0` disables the additional Qt-panel policy.
+* `WINE_FUSION_PANEL_FIRST_PAINT=0` disables the initial-paint guard. Large owned
+  Qt tool windows with buffered GDI surfaces start with X11 opacity zero. Expose
+  of the initialized backing store does not reveal them: GDI drawing must have
+  started. Preserving pixels when replacing a surface also counts as GDI drawing.
+  After the first such flush, a one-time X server round trip
+  orders the pixels before an owner-thread notification restores the current
+  opacity. This does not inspect pixel colors or add a timer. Layered windows
+  are excluded initially; subsequent opacity changes are preserved. Switching
+  to direct/GPU drawing releases the guard. This mechanism requires a compositor
+  honoring `_NET_WM_WINDOW_OPACITY`, as verified locally with KWin/Xwayland.
+
+The initial-paint regression probe, including a disabled control, geometry changes,
+subsequent alpha changes, and deliberately black application content, runs with:
+
+```sh
+bash fusion/tests/build-probes.sh .build/tests
+python3 fusion/tests/run-first-paint.py --runtime /path/to/Proton-Fusion \
+  --steam /path/to/Steam --output .local/first-paint-probe
+```
 
 The patch initially retains Wine's original immediate copy and adds a corrective
 copy after source damage. This preserves exposure/geometry behavior. Coalescing

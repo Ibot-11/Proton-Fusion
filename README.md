@@ -18,6 +18,11 @@ The Fusion launcher pins a manifest-verified build instead of selecting stock
 Proton or injecting the former Vulkan/panel helpers. Versioned local installation
 and complete SDK packaging share the same runtime manifest contract.
 
+New large Qt tool panels with buffered GDI content remain transparent until
+their first drawing operation has been flushed. This prevents an empty black
+panel flashing at Qt's temporary center position before its layout is ready.
+The reveal follows the owning window's message loop; no fixed delay is used.
+
 Wine's normal child-surface copy can run before Mesa/Xwayland has updated the
 offscreen source drawable. The Fusion patch subscribes to **XDamage** on actual
 offscreen Vulkan surfaces and repaints after source damage through the window

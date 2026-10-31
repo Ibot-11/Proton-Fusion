@@ -26,6 +26,16 @@ Umschreiben der Fensterstile; er behauptet keine allgemeine Lösung für sämtli
 Qt-Popups. Die Kommentierungsleiste wird nur zusammen mit einem passenden
 sichtbaren vertikalen Panel erkannt.
 
+Neue größere Qt-Werkzeugfenster mit gepufferter GDI-Ausgabe bleiben bis zur
+ersten tatsächlichen Zeichenausgabe transparent. Dadurch wird die zunächst
+schwarze Fensterfläche an der vorläufigen Mittelposition nicht angezeigt.
+Das bloße Bereitstellen der Fläche reicht zur Freigabe nicht. Beim Ersetzen
+einer Fläche zählt auch das Kopieren vorhandener Pixel als GDI-Ausgabe.
+Die Freigabe erfolgt über den Fensterthread nach dem ersten GDI-Flush; es gibt
+keine feste Wartezeit und keine Farberkennung. Der Schalter
+`WINE_FUSION_PANEL_FIRST_PAINT=0` erlaubt den direkten Vergleich. Die lokale
+Umsetzung nutzt die Fenstertransparenz von KWin/Xwayland.
+
 ## Laufzeit-Vertrag
 
 Ein ausführbares `proton` allein gilt nicht mehr als passende Laufzeit.

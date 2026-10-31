@@ -1,3 +1,4 @@
 0001-winex11-repaint-offscreen-vulkan-on-damage.patch
 0002-winex11-manage-persistent-fusion-qt-panels.patch
 0003-bcp47langs-return-preferred-ui-languages.patch
+0004-winex11-reveal-fusion-panels-after-first-paint.patch

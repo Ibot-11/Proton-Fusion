@@ -1,0 +1,201 @@
+diff --git a/dlls/winex11.drv/window.c b/dlls/winex11.drv/window.c
+--- a/dlls/winex11.drv/window.c
++++ b/dlls/winex11.drv/window.c
+@@ -789,6 +789,43 @@
+                          XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&opacity, 1 );
+ }
+ 
++/* Qt shows new command panels before moving and painting them. Keep their
++ * initial X11 backing store transparent until GDI has supplied real pixels.
++ * Only arm this for actual buffered GDI surfaces, never GPU or layered windows. */
++BOOL fusion_prepare_first_paint( struct x11drv_win_data *data )
++{
++    const char *setting = getenv( "WINE_FUSION_PANEL_FIRST_PAINT" );
++    DWORD style = NtUserGetWindowLongW( data->hwnd, GWL_STYLE );
++    DWORD ex_style = NtUserGetWindowLongW( data->hwnd, GWL_EXSTYLE );
++    UINT dpi = NtUserGetDpiForWindow( data->hwnd );
++
++    if (data->fusion_first_paint) return data->fusion_first_paint == 1;
++    if (!setting || !strcmp( setting, "0" ) || !data->whole_window || data->embedded ||
++        !(style & WS_POPUP) || !(ex_style & WS_EX_TOOLWINDOW) || (ex_style & WS_EX_LAYERED) ||
++        !NtUserGetWindowRelative( data->hwnd, GW_OWNER ) || !fusion_qt_tool( data->hwnd )) return FALSE;
++    if (!dpi) dpi = 96;
++    if (data->rects.window.right - data->rects.window.left < (180 * dpi + 48) / 96 ||
++        data->rects.window.bottom - data->rects.window.top < (100 * dpi + 48) / 96) return FALSE;
++
++    data->fusion_first_paint = 1;
++    sync_window_opacity( data->display, data->whole_window, 0, LWA_ALPHA );
++    XFlush( data->display ); /* opacity precedes mapping on this same connection */
++    return TRUE;
++}
++
++void fusion_finish_first_paint( struct x11drv_win_data *data )
++{
++    COLORREF key;
++    BYTE alpha = 255;
++    DWORD flags;
++
++    if (data->fusion_first_paint != 1) return;
++    if (!NtUserGetLayeredWindowAttributes( data->hwnd, &key, &alpha, &flags )) flags = 0;
++    data->fusion_first_paint = 2;
++    sync_window_opacity( data->display, data->whole_window, alpha, flags );
++    XFlush( data->display );
++}
++
+ 
+ /***********************************************************************
+  *              sync_window_text
+@@ -2729,6 +2766,9 @@
+ {
+     if (data->client_window == client_window || !client_window) return;
+ 
++    /* A window switching to GPU drawing no longer has a buffered GDI flush. */
++    fusion_finish_first_paint( data );
++
+     TRACE( "%p/%lx attaching client window %lx\n", data->hwnd, data->whole_window, client_window );
+ 
+     detach_client_window( data, data->client_window );
+@@ -2879,6 +2919,7 @@
+                                         cx, cy, 0, data->vis.depth, InputOutput,
+                                         data->vis.visual, mask, &attr );
+     if (!data->whole_window) goto done;
++    data->fusion_first_paint = 0;
+     set_wine_allow_flip( data->whole_window, 0 );
+ 
+     SetRect( &data->current_state.rect, pos.x, pos.y, pos.x + cx, pos.y + cy );
+@@ -3046,7 +3087,7 @@
+         {
+             data->layered = FALSE;
+             set_window_visual( data, &default_visual, FALSE );
+-            sync_window_opacity( data->display, data->whole_window, 0, 0 );
++            sync_window_opacity( data->display, data->whole_window, 0, data->fusion_first_paint == 1 ? LWA_ALPHA : 0 );
+         }
+         if (changed & WS_EX_TRANSPARENT) sync_window_style( data );
+         flush = TRUE;
+@@ -3967,7 +4008,9 @@
+ 
+         if (data->whole_window)
+         {
+-            sync_window_opacity( data->display, data->whole_window, alpha, flags );
++            sync_window_opacity( data->display, data->whole_window,
++                                 data->fusion_first_paint == 1 ? 0 : alpha,
++                                 data->fusion_first_paint == 1 ? LWA_ALPHA : flags );
+             XFlush( data->display );
+         }
+ 
+@@ -3999,7 +4042,9 @@
+ 
+     if (data->whole_window)
+     {
+-        sync_window_opacity( data->display, data->whole_window, alpha, flags );
++        sync_window_opacity( data->display, data->whole_window,
++                                 data->fusion_first_paint == 1 ? 0 : alpha,
++                                 data->fusion_first_paint == 1 ? LWA_ALPHA : flags );
+         XFlush( data->display );
+     }
+ 
+@@ -4065,6 +4110,14 @@
+     case WM_X11DRV_ADD_TAB:
+         taskbar_add_tab( hwnd );
+         return 0;
++    case WM_X11DRV_FUSION_FIRST_PAINT:
++        if ((data = get_win_data( hwnd )))
++        {
++            /* Reject notifications from surfaces belonging to an old X window. */
++            if (data->whole_window == wp) fusion_finish_first_paint( data );
++            release_win_data( data );
++        }
++        return 0;
+     default:
+         FIXME( "got window msg %x hwnd %p wp %lx lp %lx\n", msg, hwnd, (long)wp, lp );
+         return 0;
+diff --git a/dlls/winex11.drv/bitblt.c b/dlls/winex11.drv/bitblt.c
+--- a/dlls/winex11.drv/bitblt.c
++++ b/dlls/winex11.drv/bitblt.c
+@@ -1589,6 +1589,7 @@
+     GC                    gc;
+     struct x11drv_image  *image;
+     BOOL                  byteswap;
++    BOOL                  fusion_first_paint;
+     int                   x_offset;
+     int                   y_offset;
+     RECT                 *clip_rects;
+@@ -1871,7 +1872,17 @@
+                    dirty->top, rect.left + dirty->left, rect.top + dirty->top,
+                    dirty->right - dirty->left, dirty->bottom - dirty->top );
+ 
+-    XFlush( gdi_display );
++    /* Expose/resize also flush the initialized backing store. Wait until the
++     * DIB window driver has actually acquired the surface for GDI drawing. */
++    if (surface->fusion_first_paint && window_surface->draw_start_ticks && !IsRectEmpty( dirty ))
++    {
++        /* This is a one-time X server barrier, not a GPU wait. The owning
++         * thread must not reveal the window before these pixels arrive. */
++        XSync( gdi_display, False );
++        NtUserPostMessage( window_surface->hwnd, WM_X11DRV_FUSION_FIRST_PAINT, surface->window, 0 );
++        surface->fusion_first_paint = FALSE;
++    }
++    else XFlush( gdi_display );
+ 
+     return TRUE;
+ }
+@@ -2013,12 +2024,16 @@
+     }
+     else if (enable_direct_drawing( data, layered ))
+     {
++        fusion_finish_first_paint( data );
+         *surface = NULL;  /* indicate that we want to draw directly to the window */
+         goto done; /* draw directly to the window */
+     }
+ 
+     *surface = create_surface( data->hwnd, data->whole_window, &data->vis, surface_rect,
+                                layered ? data->use_alpha : FALSE );
++    if (*surface && !layered)
++        get_x11_surface( *surface )->fusion_first_paint = fusion_prepare_first_paint( data );
++    if (!*surface) fusion_finish_first_paint( data );
+     set_surface_window_rects( *surface, &data->rects );
+ 
+ done:
+diff --git a/dlls/winex11.drv/x11drv.h b/dlls/winex11.drv/x11drv.h
+--- a/dlls/winex11.drv/x11drv.h
++++ b/dlls/winex11.drv/x11drv.h
+@@ -637,7 +637,8 @@
+     WM_X11DRV_UPDATE_CLIPBOARD = WM_WINE_FIRST_DRIVER_MSG,
+     WM_X11DRV_SET_WIN_REGION,
+     WM_X11DRV_DELETE_TAB,
+-    WM_X11DRV_ADD_TAB
++    WM_X11DRV_ADD_TAB,
++    WM_X11DRV_FUSION_FIRST_PAINT
+ };
+ 
+ /* _NET_WM_STATE properties that we keep track of */
+@@ -690,6 +691,7 @@
+     UINT        embedded : 1;   /* is window an XEMBED client? */
+     UINT        shaped : 1;     /* is window using a custom region shape? */
+     UINT        layered : 1;    /* is window layered and with valid attributes? */
++    UINT        fusion_first_paint : 2; /* 0: unused, 1: awaiting pixels, 2: ready */
+     UINT        use_alpha : 1;  /* does window use an alpha channel? */
+     UINT        skip_taskbar : 1; /* does window should be deleted from taskbar */
+     UINT        add_taskbar : 1; /* does window should be added to taskbar regardless of style */
+@@ -728,6 +730,8 @@
+ extern Window get_dummy_parent(void);
+ 
+ extern void set_surface_window_rects( struct window_surface *window_surface, const struct window_rects *rects );
++extern BOOL fusion_prepare_first_paint( struct x11drv_win_data *data );
++extern void fusion_finish_first_paint( struct x11drv_win_data *data );
+ extern BOOL window_is_reparenting( HWND hwnd );
+ extern BOOL window_should_take_focus( HWND hwnd, Time time );
+ extern BOOL window_has_pending_wm_state( HWND hwnd, UINT state );
+diff --git a/dlls/win32u/dce.c b/dlls/win32u/dce.c
+--- a/dlls/win32u/dce.c
++++ b/dlls/win32u/dce.c
+@@ -194,6 +194,9 @@
+     NtGdiDeleteObjectApp( hdc_src );
+ 
+     window_surface_lock( surface->target_surface );
++    /* Keep the drawing provenance when forwarding a DPI-scaled surface. */
++    if (window_surface->draw_start_ticks)
++        surface->target_surface->draw_start_ticks = window_surface->draw_start_ticks;
+     add_bounds_rect( &surface->target_surface->bounds, &dst );
+     window_surface_unlock( surface->target_surface );
+ 

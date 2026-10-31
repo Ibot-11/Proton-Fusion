@@ -25,7 +25,8 @@ def write(runtime, kind):
                 source_repository='https://github.com/Ibot-11/Proton-Fusion',
                 source_commit=revision,
                 proton_base=upstream['proton']['commit'],
-                features=dict(child_damage=1, managed_qt_panels=1, bcp47_user_languages=1, profile_defaults=1),
+                features=dict(child_damage=1, managed_qt_panels=1, bcp47_user_languages=1, profile_defaults=1,
+                              qt_panel_first_paint=1),
                 files=files)
     (runtime / 'fusion-runtime.json').write_text(json.dumps(data, indent=2) + '\n')
     return data

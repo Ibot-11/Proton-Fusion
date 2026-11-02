@@ -73,7 +73,7 @@ index 7a1b799..c9ed5ad 100644
  }
  
 diff --git a/dlls/winex11.drv/init.c b/dlls/winex11.drv/init.c
-index eeac1c7..0e36e3a 100644
+index eeac1c7..5addb1a 100644
 --- a/dlls/winex11.drv/init.c
 +++ b/dlls/winex11.drv/init.c
 @@ -26,15 +26,20 @@
@@ -97,7 +97,7 @@ index eeac1c7..0e36e3a 100644
  
  Display *gdi_display;  /* display to use for all GDI functions */
  
-@@ -321,6 +326,11 @@ struct x11drv_client_surface
+@@ -321,6 +326,12 @@ struct x11drv_client_surface
      HDC hdc_src;
      HDC hdc_dst;
      BOOL other_process;
@@ -105,11 +105,12 @@ index eeac1c7..0e36e3a 100644
 +#ifdef SONAME_LIBXDAMAGE
 +    Display *damage_display;
 +    Damage damage;
++    LONG damage_invalid;
 +#endif
  };
  
  static struct x11drv_client_surface *impl_from_client_surface( struct client_surface *client )
-@@ -328,6 +338,85 @@ static struct x11drv_client_surface *impl_from_client_surface( struct client_sur
+@@ -328,6 +339,152 @@ static struct x11drv_client_surface *impl_from_client_surface( struct client_sur
      return CONTAINING_RECORD( client, struct x11drv_client_surface, client );
  }
  
@@ -118,15 +119,49 @@ index eeac1c7..0e36e3a 100644
 +static typeof(XDamageDestroy) *pXDamageDestroy;
 +static typeof(XDamageSubtract) *pXDamageSubtract;
 +static XContext damage_context;
-+static BOOL damage_enabled;
++static LONG damage_enabled;
++static int damage_opcode, damage_error_base;
 +static pthread_once_t damage_once = PTHREAD_ONCE_INIT;
++
++static int damage_create_error( Display *display, XErrorEvent *event, void *arg )
++{
++    return event->request_code == damage_opcode && event->minor_code == X_DamageCreate &&
++           event->error_code == BadDrawable;
++}
++
++/* A drawable can disappear before queued notifications or cleanup requests
++ * arrive. Only these two invalid-Damage errors are harmless; keep all other
++ * X11 errors on the normal reporting path. No round trip is added per frame. */
++BOOL client_surface_damage_error( Display *display, XErrorEvent *event )
++{
++    if (!InterlockedCompareExchange( &damage_enabled, 0, 0 ) || event->request_code != damage_opcode ||
++        event->error_code != damage_error_base + BadDamage ||
++        (event->minor_code != X_DamageDestroy && event->minor_code != X_DamageSubtract)) return FALSE;
++    if (event->minor_code == X_DamageSubtract)
++    {
++        struct client_surface *client;
++        /* Context removal precedes object destruction under the display lock, so
++         * the pointer is live while marking it. The next normal surface
++         * update rebuilds the subscription, without waiting on every frame. */
++        XLockDisplay( display );
++        if (!XFindContext( display, event->resourceid, damage_context, (char **)&client ))
++            InterlockedExchange( &impl_from_client_surface( client )->damage_invalid, TRUE );
++        XUnlockDisplay( display );
++    }
++    TRACE_(fusion)( "ignoring retired Damage %#lx, request %u\n", event->resourceid, event->minor_code );
++    return TRUE;
++}
 +
 +static BOOL client_surface_damage_notify( HWND hwnd, XEvent *event )
 +{
 +    XDamageNotifyEvent *damage = (XDamageNotifyEvent *)event;
 +    void *identity;
++    int missing;
 +
-+    if (XFindContext( event->xany.display, damage->damage, damage_context, (char **)&identity )) return TRUE;
++    XLockDisplay( event->xany.display );
++    missing = XFindContext( event->xany.display, damage->damage, damage_context, (char **)&identity );
++    XUnlockDisplay( event->xany.display );
++    if (missing) return TRUE;
 +    /* Clear before painting: a new source update must be able to generate the
 +     * next notification. Copying to the destination does not damage the source. */
 +    pXDamageSubtract( event->xany.display, damage->damage, None, None );
@@ -150,44 +185,77 @@ index eeac1c7..0e36e3a 100644
 +    pXDamageDestroy = dlsym( handle, "XDamageDestroy" );
 +    pXDamageSubtract = dlsym( handle, "XDamageSubtract" );
 +    if (!query_extension || !pXDamageCreate || !pXDamageDestroy || !pXDamageSubtract ||
-+        !query_extension( gdi_display, &event_base, &error_base ))
++        !query_extension( gdi_display, &event_base, &error_base ) ||
++        !XQueryExtension( gdi_display, DAMAGE_NAME, &damage_opcode, &event_base, &damage_error_base ))
 +    {
 +        dlclose( handle );
 +        return;
 +    }
 +    damage_context = XUniqueContext();
 +    X11DRV_register_event_handler( event_base + XDamageNotify, client_surface_damage_notify, "DamageNotify" );
-+    damage_enabled = TRUE;
++    InterlockedExchange( &damage_enabled, TRUE );
 +    TRACE_(fusion)( "offscreen Vulkan damage repaint enabled\n" );
 +}
 +
 +static void client_surface_damage_stop( struct x11drv_client_surface *surface )
 +{
 +    if (!surface->damage) return;
++    XLockDisplay( surface->damage_display );
 +    XDeleteContext( surface->damage_display, surface->damage, damage_context );
++    XUnlockDisplay( surface->damage_display );
 +    pXDamageDestroy( surface->damage_display, surface->damage );
 +    XFlush( surface->damage_display );
 +    surface->damage = None;
 +    surface->damage_display = NULL;
++    InterlockedExchange( &surface->damage_invalid, FALSE );
 +}
 +
 +static void client_surface_damage_start( HWND hwnd, struct x11drv_client_surface *surface )
 +{
 +    struct x11drv_win_data *data;
 +
-+    if (!surface->vulkan || surface->damage) return;
++    if (!surface->vulkan) return;
++    if (surface->damage)
++    {
++        if (!InterlockedCompareExchange( &surface->damage_invalid, 0, 0 )) return;
++        client_surface_damage_stop( surface );
++    }
 +    pthread_once( &damage_once, client_surface_damage_init );
-+    if (!damage_enabled || !(data = get_win_data( hwnd ))) return;
++    if (!damage_enabled) return;
++    /* The drawable is created/reparented on a different connection. Finish
++     * those requests before subscribing on its owner's event connection. */
++    XSync( gdi_display, False );
++    if (!(data = get_win_data( hwnd ))) return;
 +    /* Subscribe on the window owner's event connection, not gdi_display: its
 +     * normal message loop must wake even when the rendering thread goes idle. */
-+    surface->damage_display = data->display;
++    X11DRV_expect_error( data->display, damage_create_error, NULL );
 +    surface->damage = pXDamageCreate( data->display, surface->window, XDamageReportNonEmpty );
-+    XSaveContext( data->display, surface->damage, damage_context, (char *)&surface->client );
-+    XFlush( data->display );
++    XSync( data->display, False );
++    if (X11DRV_check_error())
++    {
++        WARN_(fusion)( "drawable %#lx disappeared before Damage subscription\n", surface->window );
++        surface->damage = None;
++    }
++    else if (surface->damage)
++    {
++        int missing;
++        XLockDisplay( data->display );
++        missing = XSaveContext( data->display, surface->damage, damage_context, (char *)&surface->client );
++        if (!missing) surface->damage_display = data->display;
++        XUnlockDisplay( data->display );
++        if (missing)
++        {
++            pXDamageDestroy( data->display, surface->damage );
++            XFlush( data->display );
++            surface->damage = None;
++        }
++    }
 +    release_win_data( data );
-+    TRACE_(fusion)( "watching offscreen Vulkan drawable %#lx, damage %#lx\n", surface->window, surface->damage );
++    if (surface->damage)
++        TRACE_(fusion)( "watching offscreen Vulkan drawable %#lx, damage %#lx\n", surface->window, surface->damage );
 +}
 +#else
++BOOL client_surface_damage_error( Display *display, XErrorEvent *event ) { return FALSE; }
 +static void client_surface_damage_stop( struct x11drv_client_surface *surface ) {}
 +static void client_surface_damage_start( HWND hwnd, struct x11drv_client_surface *surface ) {}
 +#endif
@@ -195,7 +263,7 @@ index eeac1c7..0e36e3a 100644
  static void x11drv_client_surface_destroy( struct client_surface *client )
  {
      struct x11drv_client_surface *surface = impl_from_client_surface( client );
-@@ -335,6 +424,7 @@ static void x11drv_client_surface_destroy( struct client_surface *client )
+@@ -335,6 +492,7 @@ static void x11drv_client_surface_destroy( struct client_surface *client )
  
      TRACE( "%s\n", debugstr_client_surface( client ) );
  
@@ -203,7 +271,7 @@ index eeac1c7..0e36e3a 100644
      if (surface->colormap != default_colormap) XFreeColormap( gdi_display, surface->colormap );
      if (surface->window) destroy_client_window( hwnd, surface->window );
      if (surface->hdc_dst) NtGdiDeleteObjectApp( surface->hdc_dst );
-@@ -350,6 +440,7 @@ static void x11drv_client_surface_detach( struct client_surface *client )
+@@ -350,6 +508,7 @@ static void x11drv_client_surface_detach( struct client_surface *client )
  
      TRACE( "%s\n", debugstr_client_surface( client ) );
  
@@ -211,7 +279,7 @@ index eeac1c7..0e36e3a 100644
      if ((data = get_win_data( hwnd )))
      {
          detach_client_window( data, client_window );
-@@ -406,6 +497,7 @@ static void client_surface_update_offscreen( HWND hwnd, struct x11drv_client_sur
+@@ -406,6 +565,7 @@ static void client_surface_update_offscreen( HWND hwnd, struct x11drv_client_sur
  
      if (InterlockedExchange( &surface->client.offscreen, offscreen ) == offscreen)
      {
@@ -219,7 +287,7 @@ index eeac1c7..0e36e3a 100644
          if (!offscreen && (data = get_win_data( hwnd )))
          {
              attach_client_window( data, surface->window );
-@@ -420,6 +512,7 @@ static void client_surface_update_offscreen( HWND hwnd, struct x11drv_client_sur
+@@ -420,6 +580,7 @@ static void client_surface_update_offscreen( HWND hwnd, struct x11drv_client_sur
  
      if (!offscreen)
      {
@@ -227,7 +295,7 @@ index eeac1c7..0e36e3a 100644
  #ifdef SONAME_LIBXCOMPOSITE
          if (usexcomposite) pXCompositeUnredirectWindow( gdi_display, surface->window, CompositeRedirectManual );
  #endif
-@@ -444,6 +537,7 @@ static void client_surface_update_offscreen( HWND hwnd, struct x11drv_client_sur
+@@ -444,6 +605,7 @@ static void client_surface_update_offscreen( HWND hwnd, struct x11drv_client_sur
  #ifdef SONAME_LIBXCOMPOSITE
          if (usexcomposite) pXCompositeRedirectWindow( gdi_display, surface->window, CompositeRedirectManual );
  #endif
@@ -235,7 +303,7 @@ index eeac1c7..0e36e3a 100644
      }
  
      if ((data = get_win_data( hwnd )))
-@@ -576,6 +670,7 @@ Window x11drv_client_surface_create( HWND hwnd, BOOL raw, int format, struct cli
+@@ -576,6 +738,7 @@ Window x11drv_client_surface_create( HWND hwnd, BOOL raw, int format, struct cli
      if (!(surface = client_surface_create( sizeof(*surface), &x11drv_client_surface_funcs, hwnd ))) goto failed;
      surface->colormap = colormap;
      surface->raw = raw;
@@ -243,6 +311,31 @@ index eeac1c7..0e36e3a 100644
  
      if (!get_surface_rect( hwnd, &surface->rect, dpi )) goto failed;
      hwnd_thread_id = NtUserGetWindowThread(hwnd, &hwnd_pid);
+diff --git a/dlls/winex11.drv/x11drv.h b/dlls/winex11.drv/x11drv.h
+index 1e3f213..2d58fe5 100644
+--- a/dlls/winex11.drv/x11drv.h
++++ b/dlls/winex11.drv/x11drv.h
+@@ -790,6 +790,7 @@ typedef int (*x11drv_error_callback)( Display *display, XErrorEvent *event, void
+ extern void X11DRV_expect_error( Display *display, x11drv_error_callback callback, void *arg );
+ extern void X11DRV_expect_error_no_user_lock( Display *display, x11drv_error_callback callback, void *arg );
+ extern int X11DRV_check_error(void);
++extern BOOL client_surface_damage_error( Display *display, XErrorEvent *event );
+ extern POINT virtual_screen_to_root( INT x, INT y );
+ extern POINT root_to_virtual_screen( INT x, INT y );
+ extern RECT get_host_primary_monitor_rect(void);
+diff --git a/dlls/winex11.drv/x11drv_main.c b/dlls/winex11.drv/x11drv_main.c
+index 0ddf6cf..eaef36b 100644
+--- a/dlls/winex11.drv/x11drv_main.c
++++ b/dlls/winex11.drv/x11drv_main.c
+@@ -309,7 +309,7 @@ static int error_handler( Display *display, XErrorEvent *error_evt )
+             return 0;
+         }
+     }
+-    if (ignore_error( display, error_evt ))
++    if (client_surface_damage_error( display, error_evt ) || ignore_error( display, error_evt ))
+     {
+         TRACE( "got ignored error %d req %d\n",
+                error_evt->error_code, error_evt->request_code );
 diff --git a/include/wine/gdi_driver.h b/include/wine/gdi_driver.h
 index 34075ed..1b7e7b9 100644
 --- a/include/wine/gdi_driver.h

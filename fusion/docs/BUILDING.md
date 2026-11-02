@@ -84,6 +84,35 @@ causality probe for a known 580x580 test window. It is not used by the Wine fix
 or by the regression suite. No Python helper or Vulkan interception layer is
 required by the patched runtime.
 
+## X11 resource lifetime regressions
+
+The fault suite issues real X server requests with invalid resource IDs from
+private library interposers. Use a previous Proton-Fusion build that still
+exhibits the errors as the baseline. The suite requires the native X11/XDamage/
+XRandR development libraries, GCC, `ldconfig`, and the D3D11 reproducer above.
+
+```sh
+python3 fusion/tests/build-x11-fault-shims.py .build/x11-fault-shims
+python3 fusion/tests/run-x11-faults.py \
+  --baseline /path/to/previous/Proton-Fusion --runtime /path/to/fixed/Proton-Fusion \
+  --steam /path/to/Steam --shims .build/x11-fault-shims --output .local/x11-fault-results
+```
+
+It compares failed Damage creation, repeated Damage destruction, a stale Damage
+notification, and an invalid RandR CRTC query. An unrelated `BadAtom` must still
+terminate the test process, ensuring the fix does not hide general X11 errors.
+All cases are serial, use marked test prefixes and stop only those test Wine
+servers. The library shims are never packaged or installed in a runtime. No
+physical monitor configuration is changed by these tests.
+
+The Damage subscription orders drawable creation on the GDI connection before
+creation on the owner's connection, then validates the asynchronous request.
+Retired Damage cleanup and subtraction errors are scoped to those two protocol
+requests. A stale live subscription is marked under its display lock and rebuilt
+on the next ordinary surface update. There is no extra server round trip per
+frame. RandR CRTC queries use Wine's expected-error mechanism; the query already
+waits for its reply, and existing callers handle a missing CRTC.
+
 ## Diagnostics and fallback
 
 * `WINEDEBUG=+fusion` reports subscriptions and damage-triggered repaints.

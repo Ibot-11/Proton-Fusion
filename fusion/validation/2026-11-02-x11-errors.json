@@ -1,0 +1,210 @@
+{
+  "date": "2026-11-02T18:07:50.175505+00:00",
+  "observed_crashes": [
+    {
+      "time_local": "2026-11-02 14:57 Europe/Berlin",
+      "request": "XDamageCreate",
+      "error": "BadDrawable"
+    },
+    {
+      "time_local": "2026-11-02 17:51:24 Europe/Berlin",
+      "request": "RRGetCrtcInfo",
+      "error": "BadRRCrtc"
+    }
+  ],
+  "fault_tests": [
+    {
+      "runtime": "baseline",
+      "case": "create",
+      "fault": "BadDrawable",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "destroy",
+      "fault": "BadDamage",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "subtract",
+      "fault": "BadDamage",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "crtc",
+      "fault": "BadRRCrtc",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "unexpected",
+      "fault": "BadAtom",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "patched",
+      "case": "create",
+      "fault": "BadDrawable",
+      "exit": 0,
+      "fatal": false,
+      "samples": 24,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "module_hashes": {
+        "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+        "winex11.so": "bfb954468f6b0ded8f1f772d0cdb679a135015f944783e968e37436706291ffc"
+      }
+    },
+    {
+      "runtime": "patched",
+      "case": "destroy",
+      "fault": "BadDamage",
+      "exit": 0,
+      "fatal": false,
+      "samples": 24,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "module_hashes": {
+        "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+        "winex11.so": "bfb954468f6b0ded8f1f772d0cdb679a135015f944783e968e37436706291ffc"
+      }
+    },
+    {
+      "runtime": "patched",
+      "case": "subtract",
+      "fault": "BadDamage",
+      "exit": 0,
+      "fatal": false,
+      "samples": 24,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "module_hashes": {
+        "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+        "winex11.so": "bfb954468f6b0ded8f1f772d0cdb679a135015f944783e968e37436706291ffc"
+      }
+    },
+    {
+      "runtime": "patched",
+      "case": "crtc",
+      "fault": "BadRRCrtc",
+      "exit": 0,
+      "fatal": false,
+      "samples": 24,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "module_hashes": {
+        "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+        "winex11.so": "bfb954468f6b0ded8f1f772d0cdb679a135015f944783e968e37436706291ffc"
+      }
+    },
+    {
+      "runtime": "patched",
+      "case": "unexpected",
+      "fault": "BadAtom",
+      "exit": 1,
+      "fatal": true
+    }
+  ],
+  "frame_regression": {
+    "effect": 0,
+    "requested_bursts": 40,
+    "samples": 80,
+    "size": 580,
+    "resize": true,
+    "minimize": true,
+    "gpu_copies": 0,
+    "cpu_ms": 0,
+    "stress_frames": 0,
+    "module_hashes": {
+      "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+      "winex11.so": "bfb954468f6b0ded8f1f772d0cdb679a135015f944783e968e37436706291ffc"
+    },
+    "damage_disabled": false,
+    "continuous_present": null,
+    "damage_events": 0,
+    "damage_copies": 0,
+    "elapsed_s": 19.364,
+    "stale_30ms": 0,
+    "stale_200ms": 0,
+    "proton_version": "1793301796 experimental-11.0-20261027b-x86_64",
+    "runtime_build_id": "fusion-726e227a8a103a30"
+  },
+  "runtime_probes": {
+    "language_api": "passed",
+    "panel_cases": [
+      {
+        "disabled": false,
+        "override_redirect": {
+          "Panel": false,
+          "Bar": false,
+          "HUD": true,
+          "Other": true
+        }
+      },
+      {
+        "disabled": true,
+        "override_redirect": {
+          "Panel": true,
+          "Bar": true,
+          "HUD": true,
+          "Other": true
+        }
+      }
+    ],
+    "runtime_build_id": "fusion-726e227a8a103a30"
+  },
+  "first_paint": {
+    "dpi": 144,
+    "unaware": true,
+    "cases": [
+      {
+        "disabled": true,
+        "alpha": false,
+        "black": false,
+        "waiting_samples": 82,
+        "prematurely_visible": 82,
+        "painted_samples": 98
+      },
+      {
+        "disabled": false,
+        "alpha": false,
+        "black": false,
+        "waiting_samples": 82,
+        "prematurely_visible": 0,
+        "painted_samples": 99
+      },
+      {
+        "disabled": false,
+        "alpha": true,
+        "black": false,
+        "waiting_samples": 84,
+        "prematurely_visible": 0,
+        "painted_samples": 103
+      },
+      {
+        "disabled": false,
+        "alpha": false,
+        "black": true,
+        "waiting_samples": 94,
+        "prematurely_visible": 0,
+        "painted_samples": 109
+      }
+    ],
+    "runtime_build_id": "fusion-726e227a8a103a30"
+  },
+  "patch_sha256": {
+    "0001-winex11-repaint-offscreen-vulkan-on-damage.patch": "ef38a2d448e75f80b3ba419a76c6487ba7b4ab530fe4da9300142d41a7176cd7",
+    "0002-winex11-manage-persistent-fusion-qt-panels.patch": "cb84f25aa758687d26c40013f2d433f7bc19d36467204c8c5f8fcaa95572f403",
+    "0003-bcp47langs-return-preferred-ui-languages.patch": "2d13965b90d205d56a7fec5026c579a5c72ece93bc7a00b8822713ab91a15ac4",
+    "0004-winex11-reveal-fusion-panels-after-first-paint.patch": "89f803c9fe74e3fd5cb857ddd272698d944f7c872add6ac7e8215d3c5414f916",
+    "0005-winex11-handle-retired-randr-crtcs.patch": "dbd18a24091582334185435445ca66fce3e10b7cc0fae2ae170ba0cd9951ecd1"
+  },
+  "scope": "Host-local x86_64 native overlay on the existing X11/Xwayland desktop; real invalid-resource X server requests; no monitor configuration changes. Portable SDK/32-bit and other GPUs remain unverified."
+}

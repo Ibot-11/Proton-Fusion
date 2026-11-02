@@ -241,6 +241,20 @@ done:
         QueryPerformanceCounter(&t1);
         putf("STRESS", (unsigned)stress, (unsigned)((t1.QuadPart - t0.QuadPart) * 1000000 / f.QuadPart / stress), 0);
     }
+    /* Exercise native surface detachment/destruction before process teardown;
+     * otherwise ExitProcess hides lifetime bugs by leaking the COM objects. */
+    ID3D11DeviceContext_ClearState(ctx);
+    ID3D11DeviceContext_Flush(ctx);
+    ID3D11RenderTargetView_Release(rtv);
+    ID3D11Texture2D_Release(bb);
+    if (g_big_a) ID3D11Texture2D_Release(g_big_a);
+    if (g_big_b) ID3D11Texture2D_Release(g_big_b);
+    IDXGISwapChain_Release(sc);
+    ID3D11DeviceContext_Release(ctx);
+    ID3D11Device_Release(dev);
+    DestroyWindow(child);
+    DestroyWindow(top);
+    pump(100);
     put("DONE\n");
     ExitProcess(0);
 }

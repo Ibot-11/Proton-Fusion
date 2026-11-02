@@ -33,6 +33,8 @@ jobs:
           python3 fusion/tests/test_profile.py
           for script in fusion/scripts/*.sh fusion/tests/*.sh; do bash -n "$script"; done
           git diff --check
+      - name: Compile isolated X11 fault injectors
+        run: python3 fusion/tests/build-x11-fault-shims.py "$RUNNER_TEMP/fusion-fault-shims"
       - name: Compile the affected Unix modules
         run: bash fusion/scripts/build-native-modules.sh "$RUNNER_TEMP/fusion-native" 2>&1 | tee "$RUNNER_TEMP/fusion-native-build.log"
       - name: Compile the patched Windows language DLL

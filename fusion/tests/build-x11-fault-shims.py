@@ -12,7 +12,8 @@ args.output.mkdir(parents=True, exist_ok=True)
 source = Path(__file__).with_name('x11-fault-shim.c')
 cache = subprocess.check_output(['ldconfig', '-p'], text=True)
 for library, alias, define in (('libXdamage.so.1', 'libZdamage.so.1', 'FUSION_TEST_DAMAGE'),
-                               ('libXrandr.so.2', 'libZrandr.so.2', 'FUSION_TEST_RANDR')):
+                               ('libXrandr.so.2', 'libZrandr.so.2', 'FUSION_TEST_RANDR'),
+                               ('libxcb-randr.so.0', 'libzcb-randr.so.0', 'FUSION_TEST_XCB_RANDR')):
     matches = [line.split('=>', 1)[1].strip() for line in cache.splitlines()
                if line.strip().startswith(library + ' ') and 'x86-64' in line]
     if not matches:

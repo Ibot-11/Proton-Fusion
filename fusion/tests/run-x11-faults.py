@@ -21,6 +21,8 @@ cases = [('create', 'FUSION_TEST_BAD_DRAWABLE', 'BadDrawable'),
          ('destroy', 'FUSION_TEST_BAD_DAMAGE_DESTROY', 'BadDamage'),
          ('subtract', 'FUSION_TEST_BAD_DAMAGE_SUBTRACT', 'BadDamage'),
          ('crtc', 'FUSION_TEST_BAD_CRTC', 'BadRRCrtc'),
+         ('crtc-xcb', 'FUSION_TEST_BAD_CRTC_XCB', 'BadRRCrtc'),
+         ('unexpected-randr', 'FUSION_TEST_UNEXPECTED_RANDR', 'BadRRCrtc'),
          ('unexpected', 'FUSION_TEST_UNEXPECTED_XERROR', 'BadAtom')]
 results = []
 
@@ -59,7 +61,7 @@ for label, runtime in (('baseline', args.baseline.resolve()), ('patched', args.r
             if 'FUSION_FAULT:' not in text: raise RuntimeError(f'Fault injection was not exercised: {label}-{name}')
             fatal_lines = [line for line in text.splitlines() if line.startswith('X Error of failed request:')]
             fatal = bool(fatal_lines)
-            expected_fatal = label == 'baseline' or name == 'unexpected'
+            expected_fatal = label == 'baseline' or name.startswith('unexpected')
             if fatal != expected_fatal or bool(process.returncode) != expected_fatal:
                 raise RuntimeError(f'Unexpected result in {label}-{name}: exit={process.returncode}, fatal={fatal}')
             if fatal and not any(error in line for line in fatal_lines):

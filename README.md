@@ -26,8 +26,10 @@ The reveal follows the owning window's message loop; no fixed delay is used.
 The X11 driver handles disappearing Damage resources and RandR CRTCs during
 window destruction, minimize/restore and monitor reconfiguration. Failed Damage
 subscriptions are discarded; stale cleanup and notification requests are safe.
-Missing CRTCs follow Wine's existing missing-monitor paths. Other X11 protocol
-errors retain their normal handling.
+Missing CRTCs follow Wine's existing missing-monitor paths. The same specific
+`RRGetCrtcInfo`/`BadRRCrtc` error is also handled when Mesa submits an unchecked
+XCB query and Xlib delivers its error outside Wine's scoped query. Other X11
+protocol errors retain their normal handling.
 
 Wine's normal child-surface copy can run before Mesa/Xwayland has updated the
 offscreen source drawable. The Fusion patch subscribes to **XDamage** on actual
@@ -49,11 +51,12 @@ Cases include discard and flip swapchains, a 384x384 viewport, resize/minimize,
 GPU load, and FIFO. Stock controls reproduced the bug; disabling the patch
 restored it. Results are recorded in `fusion/validation/2026-10-31.json`.
 
-The 2026-11-02 X11 fault suite reproduces the previous build's fatal Damage and
-RandR errors. The corrected build survives all four resource-lifetime faults,
-recovers rendering, and still reports unrelated X11 errors. The 40-series frame
-regression and panel/language/initial-paint probes also pass. See
-`fusion/validation/2026-11-02-x11-errors.json`.
+The initial 2026-11-02 X11 fault suite covered Damage and Wine's direct RandR
+queries (`fusion/validation/2026-11-02-x11-errors.json`). A later background crash
+showed that this missed Mesa's unchecked XCB path. The extended suite injects a
+real invalid CRTC into Mesa RADV as well. Both paths recover rendering; unrelated
+`BadAtom` and a different RandR request with `BadRRCrtc` must remain fatal. See
+`fusion/validation/2026-11-02-xcb-randr.json` for the extended results.
 
 The local runtime
 uses host-built x86_64 Unix modules on the matching official runtime. Native

@@ -24,7 +24,7 @@ jobs:
       - name: Install native build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential clang lld autoconf bison flex libx11-dev libxext-dev libxcomposite-dev libxdamage-dev libxrender-dev libxrandr-dev libxfixes-dev libfreetype-dev libfontconfig-dev libgnutls28-dev libvulkan-dev
+          sudo apt-get install -y build-essential clang lld autoconf bison flex libx11-dev libxext-dev libxcomposite-dev libxdamage-dev libxrender-dev libxrandr-dev libxcb-randr0-dev libxfixes-dev libfreetype-dev libfontconfig-dev libgnutls28-dev libvulkan-dev
       - name: Initialize the pinned code and check patch applicability
         run: |
           git submodule update --init --depth=1 wine dxvk

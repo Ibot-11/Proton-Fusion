@@ -1,0 +1,819 @@
+{
+  "date": "2026-11-02T23:11:56.866310+01:00",
+  "observed_crash": {
+    "last_application_log_local": "2026-11-02 22:51:42 Europe/Berlin",
+    "exact_crash_time_available": false,
+    "error": "BadRRCrtc",
+    "request": "RRGetCrtcInfo",
+    "runtime_build_id": "fusion-f98fe14d3d842f27",
+    "source_commit": "0ba464aa63f02b96f63d1dda67957774e16c1d53",
+    "runtime_integrity": "passed"
+  },
+  "previous_fix_control": {
+    "runtime_build_id": "fusion-f98fe14d3d842f27",
+    "fault": "Unchecked XCB RRGetCrtcInfo BadRRCrtc",
+    "injection_stack": "libvulkan_radeon.so -> libxcb-randr.so.0",
+    "exit": 1,
+    "fatal": true
+  },
+  "cause": "Mesa unchecked XCB requests can queue an Xlib error outside the Wine scoped trap. The driver already treats the missing reply as a monitor-cache invalidation; the later Xlib error must not terminate the process.",
+  "mesa_source": "https://gitlab.freedesktop.org/mesa/mesa/-/blob/mesa-26.2.5/src/loader/loader_dri_helper.c",
+  "fix": "Recognize only the initialized RandR extension opcode, RRGetCrtcInfo request, and BadRRCrtc error in the normal Wine X11 error handler. Keep the scoped Wine query trap and NULL handling.",
+  "fault_baseline_build_id": "fusion-d9e5d9e69d1f12fa",
+  "fault_tests": [
+    {
+      "runtime": "baseline",
+      "case": "create",
+      "fault": "BadDrawable",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "destroy",
+      "fault": "BadDamage",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "subtract",
+      "fault": "BadDamage",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "crtc",
+      "fault": "BadRRCrtc",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "crtc-xcb",
+      "fault": "BadRRCrtc",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "unexpected-randr",
+      "fault": "BadRRCrtc",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "baseline",
+      "case": "unexpected",
+      "fault": "BadAtom",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "patched",
+      "case": "create",
+      "fault": "BadDrawable",
+      "exit": 0,
+      "fatal": false,
+      "samples": 24,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "module_hashes": {
+        "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+        "winex11.so": "a01418566d5168d6d283300bd839190f928e454d16e3d93c8e675cff15db5bae"
+      }
+    },
+    {
+      "runtime": "patched",
+      "case": "destroy",
+      "fault": "BadDamage",
+      "exit": 0,
+      "fatal": false,
+      "samples": 24,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "module_hashes": {
+        "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+        "winex11.so": "a01418566d5168d6d283300bd839190f928e454d16e3d93c8e675cff15db5bae"
+      }
+    },
+    {
+      "runtime": "patched",
+      "case": "subtract",
+      "fault": "BadDamage",
+      "exit": 0,
+      "fatal": false,
+      "samples": 24,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "module_hashes": {
+        "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+        "winex11.so": "a01418566d5168d6d283300bd839190f928e454d16e3d93c8e675cff15db5bae"
+      }
+    },
+    {
+      "runtime": "patched",
+      "case": "crtc",
+      "fault": "BadRRCrtc",
+      "exit": 0,
+      "fatal": false,
+      "samples": 24,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "module_hashes": {
+        "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+        "winex11.so": "a01418566d5168d6d283300bd839190f928e454d16e3d93c8e675cff15db5bae"
+      }
+    },
+    {
+      "runtime": "patched",
+      "case": "crtc-xcb",
+      "fault": "BadRRCrtc",
+      "exit": 0,
+      "fatal": false,
+      "samples": 24,
+      "stale_30ms": 0,
+      "stale_200ms": 0,
+      "module_hashes": {
+        "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+        "winex11.so": "a01418566d5168d6d283300bd839190f928e454d16e3d93c8e675cff15db5bae"
+      }
+    },
+    {
+      "runtime": "patched",
+      "case": "unexpected-randr",
+      "fault": "BadRRCrtc",
+      "exit": 1,
+      "fatal": true
+    },
+    {
+      "runtime": "patched",
+      "case": "unexpected",
+      "fault": "BadAtom",
+      "exit": 1,
+      "fatal": true
+    }
+  ],
+  "negative_randr_control": {
+    "request": "RRGetCrtcGammaSize",
+    "minor": 22,
+    "error": "BadRRCrtc",
+    "baseline_fatal": true,
+    "patched_fatal": true
+  },
+  "frame_regression": {
+    "effect": 0,
+    "requested_bursts": 40,
+    "samples": 80,
+    "size": 580,
+    "resize": true,
+    "minimize": true,
+    "gpu_copies": 0,
+    "cpu_ms": 0,
+    "stress_frames": 0,
+    "module_hashes": {
+      "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+      "winex11.so": "a01418566d5168d6d283300bd839190f928e454d16e3d93c8e675cff15db5bae"
+    },
+    "damage_disabled": false,
+    "continuous_present": null,
+    "damage_events": 0,
+    "damage_copies": 0,
+    "elapsed_s": 18.98,
+    "stale_30ms": 0,
+    "stale_200ms": 0,
+    "detail": [
+      {
+        "burst": 0,
+        "delay_ms": 30,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 0,
+        "delay_ms": 200,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 1,
+        "delay_ms": 30,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 1,
+        "delay_ms": 200,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 2,
+        "delay_ms": 30,
+        "expected": 1,
+        "pixel": 65280,
+        "correct": true
+      },
+      {
+        "burst": 2,
+        "delay_ms": 200,
+        "expected": 1,
+        "pixel": 65280,
+        "correct": true
+      },
+      {
+        "burst": 3,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 3,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 4,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 4,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 5,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 5,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 6,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 6,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 7,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 7,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 8,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 8,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 9,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 9,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 10,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 10,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 11,
+        "delay_ms": 30,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 11,
+        "delay_ms": 200,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 12,
+        "delay_ms": 30,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 12,
+        "delay_ms": 200,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 13,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 13,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 14,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 14,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 15,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 15,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 16,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 16,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 17,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 17,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 18,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 18,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 19,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 19,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 20,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 20,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 21,
+        "delay_ms": 30,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 21,
+        "delay_ms": 200,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 22,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 22,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 23,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 23,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 24,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 24,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 25,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 25,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 26,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 26,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 27,
+        "delay_ms": 30,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 27,
+        "delay_ms": 200,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 28,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 28,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 29,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 29,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 30,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 30,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 31,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 31,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 32,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 32,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 33,
+        "delay_ms": 30,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 33,
+        "delay_ms": 200,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 34,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 34,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 35,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 35,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 36,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 36,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 37,
+        "delay_ms": 30,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 37,
+        "delay_ms": 200,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 38,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 38,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 39,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 39,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      }
+    ],
+    "proton_version": "1793301796 experimental-11.0-20261027b-x86_64"
+  },
+  "runtime_probes": {
+    "language_api": "passed",
+    "panel_cases": [
+      {
+        "disabled": false,
+        "override_redirect": {
+          "Panel": false,
+          "Bar": false,
+          "HUD": true,
+          "Other": true
+        }
+      },
+      {
+        "disabled": true,
+        "override_redirect": {
+          "Panel": true,
+          "Bar": true,
+          "HUD": true,
+          "Other": true
+        }
+      }
+    ]
+  },
+  "first_paint": {
+    "dpi": 144,
+    "unaware": true,
+    "cases": [
+      {
+        "disabled": true,
+        "alpha": false,
+        "black": false,
+        "waiting_samples": 94,
+        "prematurely_visible": 94,
+        "painted_samples": 112
+      },
+      {
+        "disabled": false,
+        "alpha": false,
+        "black": false,
+        "waiting_samples": 95,
+        "prematurely_visible": 0,
+        "painted_samples": 112
+      },
+      {
+        "disabled": false,
+        "alpha": true,
+        "black": false,
+        "waiting_samples": 96,
+        "prematurely_visible": 0,
+        "painted_samples": 110
+      },
+      {
+        "disabled": false,
+        "alpha": false,
+        "black": true,
+        "waiting_samples": 94,
+        "prematurely_visible": 0,
+        "painted_samples": 112
+      }
+    ]
+  },
+  "patch_sha256": {
+    "0001-winex11-repaint-offscreen-vulkan-on-damage.patch": "ef38a2d448e75f80b3ba419a76c6487ba7b4ab530fe4da9300142d41a7176cd7",
+    "0002-winex11-manage-persistent-fusion-qt-panels.patch": "cb84f25aa758687d26c40013f2d433f7bc19d36467204c8c5f8fcaa95572f403",
+    "0003-bcp47langs-return-preferred-ui-languages.patch": "2d13965b90d205d56a7fec5026c579a5c72ece93bc7a00b8822713ab91a15ac4",
+    "0004-winex11-reveal-fusion-panels-after-first-paint.patch": "89f803c9fe74e3fd5cb857ddd272698d944f7c872add6ac7e8215d3c5414f916",
+    "0005-winex11-handle-retired-randr-crtcs.patch": "b4cdf3328cd6c517734b5e291127c8a1cdd875c77d66be2ef38e8f17500da3b0"
+  },
+  "scope": "Host-local x86_64 native overlay, RX 7900 XTX / Mesa RADV 26.2.5 / KDE Xwayland. Real X server invalid-resource requests injected into the Vulkan-driver path; no physical monitor configuration changes. Long-term background/standby behavior in Fusion still requires observation; portable SDK/32-bit and other GPUs are unverified."
+}

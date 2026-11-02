@@ -1,17 +1,27 @@
 diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
 --- a/dlls/winex11.drv/xrandr.c
 +++ b/dlls/winex11.drv/xrandr.c
-@@ -86,6 +86,34 @@
+@@ -86,6 +86,44 @@
  
  #undef MAKE_FUNCPTR
  
-+#ifdef HAVE_XRRGETPROVIDERRESOURCES
 +static int xrandr_opcode, xrandr_error_base;
++static LONG xrandr_errors_ready;
 +
++BOOL xrandr_query_error( Display *display, XErrorEvent *event )
++{
++    /* Mesa may submit unchecked XCB queries on an Xlib-owned connection.
++     * Their errors arrive later, outside get_crtc_info's scoped trap. The
++     * missing reply already makes Mesa refresh its cached screen resources. */
++    return InterlockedCompareExchange( &xrandr_errors_ready, FALSE, FALSE ) &&
++           event->request_code == xrandr_opcode && event->minor_code == X_RRGetCrtcInfo &&
++           event->error_code == xrandr_error_base + BadRRCrtc;
++}
++
++#ifdef HAVE_XRRGETPROVIDERRESOURCES
 +static int crtc_query_error( Display *display, XErrorEvent *event, void *arg )
 +{
-+    return event->request_code == xrandr_opcode && event->minor_code == X_RRGetCrtcInfo &&
-+           event->error_code == xrandr_error_base + BadRRCrtc;
++    return xrandr_query_error( display, event );
 +}
 +
 +static XRRCrtcInfo *get_crtc_info( Display *display, XRRScreenResources *resources, RRCrtc crtc )
@@ -36,7 +46,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
  static int load_xrandr(void)
  {
      int r = 0;
-@@ -506,7 +534,7 @@
+@@ -506,7 +544,7 @@
  
      for (i = 0; i < resources->ncrtc; ++i)
      {
@@ -45,7 +55,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
              continue;
  
          if (crtc_info->mode != None)
-@@ -706,7 +734,7 @@
+@@ -706,7 +744,7 @@
  
      for (crtc_idx = 0; crtc_idx < output_info->ncrtc; ++crtc_idx)
      {
@@ -54,7 +64,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
          if (!crtc_info)
              continue;
  
-@@ -740,7 +768,7 @@
+@@ -740,7 +778,7 @@
      if (!output_info || output_info->connection != RR_Connected || !output_info->crtc)
          goto fallback;
  
@@ -63,7 +73,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
      if (!crtc_info || !crtc_info->mode)
          goto fallback;
  
-@@ -761,7 +789,7 @@
+@@ -761,7 +799,7 @@
      WARN("Primary is set to a disconnected XRandR output.\n");
      for (i = 0; i < resources->ncrtc; ++i)
      {
@@ -72,7 +82,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
          if (!crtc_info)
              continue;
  
-@@ -950,7 +978,7 @@
+@@ -950,7 +988,7 @@
          /* Find primary provider */
          for (j = 0; primary_provider == -1 && j < provider_info->ncrtcs; ++j)
          {
@@ -81,7 +91,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
              if (!crtc_info)
                  continue;
  
-@@ -1066,7 +1094,7 @@
+@@ -1066,7 +1104,7 @@
          detached = FALSE;
          if (output_info->crtc)
          {
@@ -90,7 +100,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
              if (!crtc_info)
                  goto done;
          }
-@@ -1090,7 +1118,7 @@
+@@ -1090,7 +1128,7 @@
                      continue;
                  }
  
@@ -99,7 +109,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
                  pXRRFreeOutputInfo( enum_output_info );
                  if (!enum_crtc_info)
                      continue;
-@@ -1197,7 +1225,7 @@
+@@ -1197,7 +1235,7 @@
  
      if (output_info->crtc)
      {
@@ -108,7 +118,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
          if (!crtc_info)
              goto done;
      }
-@@ -1240,7 +1268,7 @@
+@@ -1240,7 +1278,7 @@
  
              if (enum_output_info->crtc)
              {
@@ -117,7 +127,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
                  if (!enum_crtc_info)
                      goto done;
  
-@@ -1483,7 +1511,7 @@
+@@ -1483,7 +1521,7 @@
      if (!crtc)
          crtc = get_output_free_crtc( screen_resources, output_info );
      if (crtc)
@@ -126,7 +136,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
  
      /* If the output is connected to a CRTC, use rotations reported by the CRTC */
      if (crtc_info)
-@@ -1590,7 +1618,7 @@
+@@ -1590,7 +1628,7 @@
  
      if (output_info->crtc)
      {
@@ -135,7 +145,7 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
          if (!crtc_info)
              goto done;
      }
-@@ -1718,7 +1746,7 @@
+@@ -1718,7 +1756,7 @@
              goto done;
      }
  
@@ -144,13 +154,50 @@ diff --git a/dlls/winex11.drv/xrandr.c b/dlls/winex11.drv/xrandr.c
      if (!crtc_info)
          goto done;
  
-@@ -1780,6 +1808,9 @@
+@@ -1780,6 +1818,8 @@
  
      /* see if Xrandr is available */
      if (!pXRRQueryExtension( gdi_display, &event_base, &error_base )) return;
-+#ifdef HAVE_XRRGETPROVIDERRESOURCES
 +    if (!XQueryExtension( gdi_display, "RANDR", &xrandr_opcode, &event_base, &xrandr_error_base )) return;
-+#endif
++    InterlockedExchange( &xrandr_errors_ready, TRUE );
      X11DRV_expect_error( gdi_display, XRandRErrorHandler, NULL );
      ok = pXRRQueryVersion( gdi_display, &major, &minor );
      if (X11DRV_check_error() || !ok) return;
+@@ -1856,6 +1896,11 @@
+ 
+ #else /* SONAME_LIBXRANDR */
+ 
++BOOL xrandr_query_error( Display *display, XErrorEvent *event )
++{
++    return FALSE;
++}
++
+ void X11DRV_XRandR_Init(void)
+ {
+     TRACE("XRandR support not compiled in.\n");
+diff --git a/dlls/winex11.drv/x11drv.h b/dlls/winex11.drv/x11drv.h
+--- a/dlls/winex11.drv/x11drv.h
++++ b/dlls/winex11.drv/x11drv.h
+@@ -883,6 +883,7 @@
+ 
+ void X11DRV_XF86VM_Init(void);
+ void X11DRV_XRandR_Init(void);
++extern BOOL xrandr_query_error( Display *display, XErrorEvent *event );
+ void init_user_driver(void);
+ 
+ /* X11 display device handler. Used to initialize display device registry data */
+diff --git a/dlls/winex11.drv/x11drv_main.c b/dlls/winex11.drv/x11drv_main.c
+--- a/dlls/winex11.drv/x11drv_main.c
++++ b/dlls/winex11.drv/x11drv_main.c
+@@ -216,6 +216,11 @@
+  */
+ static inline BOOL ignore_error( Display *display, XErrorEvent *event )
+ {
++    if (xrandr_query_error( display, event ))
++    {
++        TRACE( "ignoring retired CRTC query %#lx (serial %lu)\n", event->resourceid, event->serial );
++        return TRUE;
++    }
+     if ((event->request_code == X_SetInputFocus ||
+          event->request_code == X_ChangeWindowAttributes ||
+          event->request_code == X_ConfigureWindow ||

@@ -89,7 +89,9 @@ required by the patched runtime.
 The fault suite issues real X server requests with invalid resource IDs from
 private library interposers. Use a previous Proton-Fusion build that still
 exhibits the errors as the baseline. The suite requires the native X11/XDamage/
-XRandR development libraries, GCC, `ldconfig`, and the D3D11 reproducer above.
+XRandR/XCB-RandR development libraries, GCC, `ldconfig`, and the D3D11 reproducer
+above. The unchecked XCB case requires a Vulkan driver using that path, such as
+the tested Mesa RADV 26.2.5; the test fails if injection is not exercised.
 
 ```sh
 python3 fusion/tests/build-x11-fault-shims.py .build/x11-fault-shims
@@ -99,8 +101,10 @@ python3 fusion/tests/run-x11-faults.py \
 ```
 
 It compares failed Damage creation, repeated Damage destruction, a stale Damage
-notification, and an invalid RandR CRTC query. An unrelated `BadAtom` must still
-terminate the test process, ensuring the fix does not hide general X11 errors.
+notification, Wine's invalid RandR CRTC query, and Mesa's unchecked XCB query.
+An unrelated `BadAtom` and a different RandR request (`RRGetCrtcGammaSize`) with
+the same `BadRRCrtc` error must still terminate the test process, ensuring the fix
+matches both the error and the precise request.
 All cases are serial, use marked test prefixes and stop only those test Wine
 servers. The library shims are never packaged or installed in a runtime. No
 physical monitor configuration is changed by these tests.
@@ -111,7 +115,12 @@ Retired Damage cleanup and subtraction errors are scoped to those two protocol
 requests. A stale live subscription is marked under its display lock and rebuilt
 on the next ordinary surface update. There is no extra server round trip per
 frame. RandR CRTC queries use Wine's expected-error mechanism; the query already
-waits for its reply, and existing callers handle a missing CRTC.
+waits for its reply, and existing callers handle a missing CRTC. Mesa can also
+submit an unchecked XCB `RRGetCrtcInfo` on an Xlib-owned connection. Its missing
+reply already invalidates the cached monitor data, but Xlib subsequently
+delivers the error outside Wine's scoped trap. Wine's normal error handler now
+recognizes exactly that RandR opcode, request and error. Initialization publishes
+the extension codes atomically; no X query or blocking work runs in the handler.
 
 ## Diagnostics and fallback
 

@@ -152,6 +152,29 @@ python3 fusion/tests/run-first-paint.py --runtime /path/to/Proton-Fusion \
   --steam /path/to/Steam --output .local/first-paint-probe
 ```
 
+Insert Fastener uses a directly rendered GPU client. Creating that client does
+not necessarily call `attach_client_window()`: it can already be attached when
+that function is reached. The first-paint guard therefore releases on successful
+client creation too, and excludes panels with an existing client. No GDI drawing
+or timeout is required to reveal this type of panel.
+
+The GPU regression first shows an unpainted buffered Qt panel, then creates its D3D11
+client without any GDI painting. A previous build must reproduce zero opacity
+even after the GPU pixels are present; the fixed build must show those pixels.
+Run the tests serially on the same X11/Xwayland desktop:
+
+```sh
+python3 fusion/tests/run-first-paint.py --runtime /path/to/previous/Proton-Fusion \
+  --steam /path/to/Steam --output .local/gpu-panel-before-fix \
+  --dpi 144 --unaware --gpu after --expect-gpu-hidden
+python3 fusion/tests/run-first-paint.py --runtime /path/to/fixed/Proton-Fusion \
+  --steam /path/to/Steam --output .local/gpu-panel-after-fix \
+  --dpi 144 --unaware --gpu after
+python3 fusion/tests/run-first-paint.py --runtime /path/to/fixed/Proton-Fusion \
+  --steam /path/to/Steam --output .local/gpu-panel-existing-client \
+  --dpi 144 --unaware --gpu before
+```
+
 The patch initially retains Wine's original immediate copy and adds a corrective
 copy after source damage. This preserves exposure/geometry behavior. Coalescing
 or eliminating redundant copies is a follow-up optimization, not an assumed

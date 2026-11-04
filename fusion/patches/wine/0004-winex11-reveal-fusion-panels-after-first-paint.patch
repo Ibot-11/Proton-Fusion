@@ -16,7 +16,7 @@ diff --git a/dlls/winex11.drv/window.c b/dlls/winex11.drv/window.c
 +    UINT dpi = NtUserGetDpiForWindow( data->hwnd );
 +
 +    if (data->fusion_first_paint) return data->fusion_first_paint == 1;
-+    if (!setting || !strcmp( setting, "0" ) || !data->whole_window || data->embedded ||
++    if (!setting || !strcmp( setting, "0" ) || !data->whole_window || data->embedded || data->client_window ||
 +        !(style & WS_POPUP) || !(ex_style & WS_EX_TOOLWINDOW) || (ex_style & WS_EX_LAYERED) ||
 +        !NtUserGetWindowRelative( data->hwnd, GW_OWNER ) || !fusion_qt_tool( data->hwnd )) return FALSE;
 +    if (!dpi) dpi = 96;
@@ -55,7 +55,17 @@ diff --git a/dlls/winex11.drv/window.c b/dlls/winex11.drv/window.c
      TRACE( "%p/%lx attaching client window %lx\n", data->hwnd, data->whole_window, client_window );
  
      detach_client_window( data, data->client_window );
-@@ -2879,6 +2919,7 @@
+@@ -2803,6 +2843,9 @@
+                                                CWBackingStore | CWColormap | CWBorderPixel, &attr );
+     if (data->client_window)
+     {
++        /* Creating a GPU client bypasses attach_client_window(), including
++         * its already-attached fast path. No buffered GDI paint will follow. */
++        fusion_finish_first_paint( data );
+         set_wine_allow_flip( data->client_window, !!data->whole_window );
+         XMapWindow( gdi_display, data->client_window );
+         XFlush( gdi_display ); /* make sure client_window is created for XSelectInput */
+@@ -2879,6 +2922,7 @@
                                          cx, cy, 0, data->vis.depth, InputOutput,
                                          data->vis.visual, mask, &attr );
      if (!data->whole_window) goto done;
@@ -63,7 +73,7 @@ diff --git a/dlls/winex11.drv/window.c b/dlls/winex11.drv/window.c
      set_wine_allow_flip( data->whole_window, 0 );
  
      SetRect( &data->current_state.rect, pos.x, pos.y, pos.x + cx, pos.y + cy );
-@@ -3046,7 +3087,7 @@
+@@ -3046,7 +3090,7 @@
          {
              data->layered = FALSE;
              set_window_visual( data, &default_visual, FALSE );
@@ -72,7 +82,7 @@ diff --git a/dlls/winex11.drv/window.c b/dlls/winex11.drv/window.c
          }
          if (changed & WS_EX_TRANSPARENT) sync_window_style( data );
          flush = TRUE;
-@@ -3967,7 +4008,9 @@
+@@ -3967,7 +4011,9 @@
  
          if (data->whole_window)
          {
@@ -83,7 +93,7 @@ diff --git a/dlls/winex11.drv/window.c b/dlls/winex11.drv/window.c
              XFlush( data->display );
          }
  
-@@ -3999,7 +4042,9 @@
+@@ -3999,7 +4045,9 @@
  
      if (data->whole_window)
      {
@@ -94,7 +104,7 @@ diff --git a/dlls/winex11.drv/window.c b/dlls/winex11.drv/window.c
          XFlush( data->display );
      }
  
-@@ -4065,6 +4110,14 @@
+@@ -4065,6 +4113,14 @@
      case WM_X11DRV_ADD_TAB:
          taskbar_add_tab( hwnd );
          return 0;

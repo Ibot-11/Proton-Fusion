@@ -8,5 +8,5 @@ for probe in panel bcp47 first-paint; do
     -I/usr/include/wine/windows -I/usr/include/wine/msvcrt -nostdlib \
     -Wl,--entry=WinMainCRTStartup -Wl,--subsystem=windows \
     "$FUSION_TESTS/$probe-probe.c" -L/usr/lib/wine/x86_64-windows \
-    -lkernel32 -luser32 -lgdi32 -lcombase -o "$1/$probe-probe.exe"
+    -lkernel32 -luser32 -lgdi32 -lcombase -ld3d11 -ldxgi -o "$1/$probe-probe.exe"
 done

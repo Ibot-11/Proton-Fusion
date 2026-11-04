@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify that an unpainted, repositioned Qt panel is revealed by its first GDI flush."""
+"""Verify first-paint visibility for buffered GDI and directly rendered GPU panels."""
 import argparse
 import ctypes as C
 import importlib.util
@@ -20,7 +20,11 @@ parser.add_argument('--steam', required=True, type=Path)
 parser.add_argument('--output', required=True, type=Path)
 parser.add_argument('--dpi', type=int, choices=(96,144), default=96)
 parser.add_argument('--unaware', action='store_true')
+parser.add_argument('--gpu', choices=('before', 'after'), help='Create a GPU client before or after showing the panel')
+parser.add_argument('--expect-gpu-hidden', action='store_true', help='Require the previous build to reproduce the hidden GPU panel')
 args = parser.parse_args()
+if args.expect_gpu_hidden and not args.gpu:
+    parser.error('--expect-gpu-hidden requires --gpu')
 args.output.mkdir(parents=True, exist_ok=True)
 prefix = args.output.resolve()/'prefix'
 marker = prefix/'.proton-fusion-test-prefix'
@@ -33,14 +37,17 @@ for key in ('WINEDLLOVERRIDES', 'VK_INSTANCE_LAYERS', 'VK_LAYER_PATH', 'WINE_FUS
     env.pop(key, None)
 env.update(STEAM_COMPAT_DATA_PATH=str(prefix),
            STEAM_COMPAT_CLIENT_INSTALL_PATH=str(args.steam.resolve()), WINEDEBUG=os.environ.get('FUSION_PROBE_DEBUG','-all'))
-env.pop('FUSION_PAINT_PROBE_UNAWARE', None)
+for key in ('FUSION_PAINT_PROBE_UNAWARE', 'FUSION_PAINT_PROBE_GPU'):
+    env.pop(key, None)
 if args.unaware: env['FUSION_PAINT_PROBE_UNAWARE'] = '1'
+if args.gpu: env['FUSION_PAINT_PROBE_GPU'] = args.gpu
 with (args.output/'dpi.log').open('w') as log:
     subprocess.run([str(args.runtime.resolve()/'proton'), 'run', 'reg.exe', 'add',
                     r'HKCU\Control Panel\Desktop', '/v', 'LogPixels', '/t', 'REG_DWORD', '/d', str(args.dpi), '/f'],
                    env=env, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=60)
 results = []
-for disabled, alpha, black in ((True,False,False), (False,False,False), (False,True,False), (False,False,True)):
+cases = ((False,False,False),) if args.gpu else ((True,False,False), (False,False,False), (False,True,False), (False,False,True))
+for disabled, alpha, black in cases:
     run_env = dict(env, WINE_FUSION_PANEL_FIRST_PAINT='0' if disabled else '1')
     for key, enabled in (('FUSION_PAINT_PROBE_ALPHA',alpha), ('FUSION_PAINT_PROBE_BLACK',black)):
         run_env.pop(key, None)
@@ -77,22 +84,26 @@ for disabled, alpha, black in ((True,False,False), (False,False,False), (False,T
                         samples.append(dict(phase=name.removeprefix('FusionPaintProbe-'), opacity=opacity,
                                             pixel=x.pixel(window)))
                 time.sleep(.005)
-            if process.wait(timeout=5): raise RuntimeError('GDI probe failed')
+            if process.wait(timeout=5): raise RuntimeError('First-paint probe failed')
             waiting = [s for s in samples if s['phase'] == 'Waiting']
             painted = [s for s in samples if s['phase'] == 'Painted' and
-                       s['opacity'] == (0x80808080 if alpha else 0xffffffff) and
+                       s['opacity'] == (0 if args.expect_gpu_hidden else 0x80808080 if alpha else 0xffffffff) and
                        s['pixel'] == (0 if black else 0x3377bb)]
             (args.output/f'samples-{case}.json').write_text(json.dumps(samples))
             if len(waiting) < 10 or len(painted) < 10:
                 raise RuntimeError(f'Missing waiting/painted samples for {case}: {len(waiting)}/{len(painted)}')
             exposed = sum(s['opacity'] != 0 for s in waiting)
             if disabled and not exposed: raise RuntimeError('Control did not reproduce premature visibility')
-            if not disabled and exposed: raise RuntimeError(f'Unpainted panel exposed in {exposed} samples')
+            if not disabled and args.gpu != 'before' and exposed:
+                raise RuntimeError(f'Unpainted panel exposed in {exposed} samples')
+            if args.expect_gpu_hidden and any(s['opacity'] != 0 for s in samples if s['phase'] == 'Painted'):
+                raise RuntimeError('Previous build did not reproduce the hidden GPU panel')
             results.append(dict(disabled=disabled, alpha=alpha, black=black, waiting_samples=len(waiting), prematurely_visible=exposed,
                                 painted_samples=len(painted)))
         finally:
             if process.poll() is None: process.terminate(); process.wait(timeout=10)
             x.lib.XCloseDisplay(x.display)
-summary = dict(runtime=str(args.runtime.resolve()), dpi=args.dpi, unaware=args.unaware, cases=results)
+summary = dict(runtime=str(args.runtime.resolve()), dpi=args.dpi, unaware=args.unaware, gpu=args.gpu,
+               expected_gpu_hidden=args.expect_gpu_hidden, cases=results)
 (args.output/'result.json').write_text(json.dumps(summary, indent=2)+'\n')
 print(json.dumps(summary))

@@ -22,6 +22,9 @@ New large Qt tool panels with buffered GDI content remain transparent until
 their first drawing operation has been flushed. This prevents an empty black
 panel flashing at Qt's temporary center position before its layout is ready.
 The reveal follows the owning window's message loop; no fixed delay is used.
+Panels that switch to a GPU client, including Insert Fastener's catalog, release
+the guard when that client is created. Existing GPU clients cannot arm the GDI
+guard again. This covers client creation as well as later client attachment.
 
 The X11 driver handles disappearing Damage resources and RandR CRTCs during
 window destruction, minimize/restore and monitor reconfiguration. Failed Damage
@@ -57,6 +60,12 @@ showed that this missed Mesa's unchecked XCB path. The extended suite injects a
 real invalid CRTC into Mesa RADV as well. Both paths recover rendering; unrelated
 `BadAtom` and a different RandR request with `BadRRCrtc` must remain fatal. See
 `fusion/validation/2026-11-02-xcb-randr.json` for the extended results.
+
+The Insert Fastener regression reproduces a rendered GPU panel remaining at
+zero opacity in the previous build. The corrected build reveals it for GPU
+clients created before or after showing the panel. GDI first-paint, subsequent
+alpha, deliberately black content and resize/minimize frame tests still pass.
+See `fusion/validation/2026-11-04-gpu-panel-visibility.json`.
 
 The local runtime
 uses host-built x86_64 Unix modules on the matching official runtime. Native

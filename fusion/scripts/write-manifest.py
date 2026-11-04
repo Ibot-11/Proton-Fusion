@@ -26,7 +26,8 @@ def write(runtime, kind):
                 source_commit=revision,
                 proton_base=upstream['proton']['commit'],
                 features=dict(child_damage=1, managed_qt_panels=1, bcp47_user_languages=1, profile_defaults=1,
-                              qt_panel_first_paint=1, x11_resource_lifetime=1, x11_unchecked_randr=1),
+                              qt_panel_first_paint=1, qt_panel_gpu_visibility=1,
+                              x11_resource_lifetime=1, x11_unchecked_randr=1),
                 files=files)
     (runtime / 'fusion-runtime.json').write_text(json.dumps(data, indent=2) + '\n')
     return data

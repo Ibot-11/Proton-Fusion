@@ -1,0 +1,698 @@
+{
+  "date": "2026-11-04T22:54:39.734065+01:00",
+  "observed_issue": {
+    "command": "Insert Fastener",
+    "baseline_build_id": "fusion-67e59b456afd3b2c",
+    "mapped": true,
+    "x11_opacity": 0,
+    "gpu_client_child": true,
+    "catalog_http_requests": {
+      "200": 60
+    },
+    "temporary_reveal_confirmed_by_user": true
+  },
+  "cause": "A newly created GPU client bypasses attach_client_window() release logic; its already-attached fast path also returns before releasing the GDI first-paint guard. The panel therefore waits indefinitely for GDI drawing even though GPU pixels are present.",
+  "fix": "Release the guard after successful GPU client creation and exclude panels with an existing client from initial GDI guarding.",
+  "baseline_gpu": {
+    "dpi": 144,
+    "unaware": true,
+    "gpu": "after",
+    "expected_gpu_hidden": true,
+    "cases": [
+      {
+        "disabled": false,
+        "alpha": false,
+        "black": false,
+        "waiting_samples": 96,
+        "prematurely_visible": 0,
+        "painted_samples": 111
+      }
+    ]
+  },
+  "patched_gpu_after_show": {
+    "dpi": 144,
+    "unaware": true,
+    "gpu": "after",
+    "expected_gpu_hidden": false,
+    "cases": [
+      {
+        "disabled": false,
+        "alpha": false,
+        "black": false,
+        "waiting_samples": 94,
+        "prematurely_visible": 0,
+        "painted_samples": 112
+      }
+    ]
+  },
+  "patched_gpu_before_show": {
+    "dpi": 144,
+    "unaware": true,
+    "gpu": "before",
+    "expected_gpu_hidden": false,
+    "cases": [
+      {
+        "disabled": false,
+        "alpha": false,
+        "black": false,
+        "waiting_samples": 100,
+        "prematurely_visible": 100,
+        "painted_samples": 111
+      }
+    ]
+  },
+  "gpu_before_show_note": "The GPU client already exists during the waiting phase; visible waiting samples are expected. The initial GDI guard must not be armed for this case.",
+  "gdi_first_paint": {
+    "dpi": 144,
+    "unaware": true,
+    "gpu": null,
+    "expected_gpu_hidden": false,
+    "cases": [
+      {
+        "disabled": true,
+        "alpha": false,
+        "black": false,
+        "waiting_samples": 96,
+        "prematurely_visible": 96,
+        "painted_samples": 113
+      },
+      {
+        "disabled": false,
+        "alpha": false,
+        "black": false,
+        "waiting_samples": 95,
+        "prematurely_visible": 0,
+        "painted_samples": 112
+      },
+      {
+        "disabled": false,
+        "alpha": true,
+        "black": false,
+        "waiting_samples": 97,
+        "prematurely_visible": 0,
+        "painted_samples": 112
+      },
+      {
+        "disabled": false,
+        "alpha": false,
+        "black": true,
+        "waiting_samples": 95,
+        "prematurely_visible": 0,
+        "painted_samples": 113
+      }
+    ]
+  },
+  "frame_regression": {
+    "effect": 0,
+    "requested_bursts": 40,
+    "samples": 80,
+    "size": 580,
+    "resize": true,
+    "minimize": true,
+    "gpu_copies": 0,
+    "cpu_ms": 0,
+    "stress_frames": 0,
+    "module_hashes": {
+      "win32u.so": "68096f64bc432974c36c0ca57231c216ebc2def550e3abddbe09b430ec3f16d3",
+      "winex11.so": "0b3bb3660a8085d33ba7048eeff091517d1177a54c250ed5c5503cc1837920d8"
+    },
+    "damage_disabled": false,
+    "continuous_present": null,
+    "damage_events": 0,
+    "damage_copies": 0,
+    "elapsed_s": 19.005,
+    "stale_30ms": 0,
+    "stale_200ms": 0,
+    "detail": [
+      {
+        "burst": 0,
+        "delay_ms": 30,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 0,
+        "delay_ms": 200,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 1,
+        "delay_ms": 30,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 1,
+        "delay_ms": 200,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 2,
+        "delay_ms": 30,
+        "expected": 1,
+        "pixel": 65280,
+        "correct": true
+      },
+      {
+        "burst": 2,
+        "delay_ms": 200,
+        "expected": 1,
+        "pixel": 65280,
+        "correct": true
+      },
+      {
+        "burst": 3,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 3,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 4,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 4,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 5,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 5,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 6,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 6,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 7,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 7,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 8,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 8,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 9,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 9,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 10,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 10,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 11,
+        "delay_ms": 30,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 11,
+        "delay_ms": 200,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 12,
+        "delay_ms": 30,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 12,
+        "delay_ms": 200,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 13,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 13,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 14,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 14,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 15,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 15,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 16,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 16,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 17,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 17,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 18,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 18,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 19,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 19,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 20,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 20,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 21,
+        "delay_ms": 30,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 21,
+        "delay_ms": 200,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 22,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 22,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 23,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 23,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 24,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 24,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 25,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 25,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 26,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 26,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 27,
+        "delay_ms": 30,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 27,
+        "delay_ms": 200,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 28,
+        "delay_ms": 30,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 28,
+        "delay_ms": 200,
+        "expected": 6,
+        "pixel": 16777215,
+        "correct": true
+      },
+      {
+        "burst": 29,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 29,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 30,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 30,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 31,
+        "delay_ms": 30,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 31,
+        "delay_ms": 200,
+        "expected": 4,
+        "pixel": 65535,
+        "correct": true
+      },
+      {
+        "burst": 32,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 32,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 33,
+        "delay_ms": 30,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 33,
+        "delay_ms": 200,
+        "expected": 2,
+        "pixel": 255,
+        "correct": true
+      },
+      {
+        "burst": 34,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 34,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 35,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 35,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 36,
+        "delay_ms": 30,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 36,
+        "delay_ms": 200,
+        "expected": 5,
+        "pixel": 16711935,
+        "correct": true
+      },
+      {
+        "burst": 37,
+        "delay_ms": 30,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 37,
+        "delay_ms": 200,
+        "expected": 7,
+        "pixel": 16744448,
+        "correct": true
+      },
+      {
+        "burst": 38,
+        "delay_ms": 30,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 38,
+        "delay_ms": 200,
+        "expected": 0,
+        "pixel": 16711680,
+        "correct": true
+      },
+      {
+        "burst": 39,
+        "delay_ms": 30,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      },
+      {
+        "burst": 39,
+        "delay_ms": 200,
+        "expected": 3,
+        "pixel": 16776960,
+        "correct": true
+      }
+    ],
+    "proton_version": "1793301796 experimental-11.0-20261027b-x86_64"
+  },
+  "patch_sha256": {
+    "0001-winex11-repaint-offscreen-vulkan-on-damage.patch": "ef38a2d448e75f80b3ba419a76c6487ba7b4ab530fe4da9300142d41a7176cd7",
+    "0002-winex11-manage-persistent-fusion-qt-panels.patch": "cb84f25aa758687d26c40013f2d433f7bc19d36467204c8c5f8fcaa95572f403",
+    "0003-bcp47langs-return-preferred-ui-languages.patch": "2d13965b90d205d56a7fec5026c579a5c72ece93bc7a00b8822713ab91a15ac4",
+    "0004-winex11-reveal-fusion-panels-after-first-paint.patch": "caa2ea339b156e6db63322138ad99c520a0397ff218736d468f0483f60f658dc",
+    "0005-winex11-handle-retired-randr-crtcs.patch": "b4cdf3328cd6c517734b5e291127c8a1cdd875c77d66be2ef38e8f17500da3b0"
+  },
+  "scope": "Host-local x86_64 overlay on matching Proton Experimental, KDE Xwayland, RX 7900 XTX / Mesa RADV. DPI-unaware 144-DPI GDI and D3D11 probes use private test prefixes. No timers or pixel-color heuristics in the runtime. Real Fusion post-deployment verification still pending at test completion."
+}
